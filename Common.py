@@ -29,9 +29,9 @@ sensorGridDim = 3
 #nInNodes = sensorGridDim*sensorGridDim + 6
 #nOutNodes = 2        
 
-''' For initial testing, just try to compute a 4-bit XOR '''
-nInNodes = 4
-nOutNodes = 4
+''' For initial testing, just try to compute a 2-bit XOR '''
+nInNodes = 2
+nOutNodes = 2
 
 
 ''' Input/Output nodes. These will be common to all organisms, even if the i/o nodes
