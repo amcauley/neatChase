@@ -7,16 +7,16 @@ def runProg():
     Common.ioNodes = []    
     for n in range(Common.nInNodes):
         newGene = Genes.NodeGene("In")
-        Common.ioNodes.append(newGene.nodeNum : newGene)
+        Common.ioNodes.append(newGene)
     for n in range(Common.nOutNodes):
         newGene = Genes.NodeGene("Out")
-        Common.ioNodes.append(newGene.nodeNum : newGene)    
+        Common.ioNodes.append(newGene)    
     
     population = []
     for n in range(Common.popSize):
         ''' Create new organism, then assign i/o nodes to it'''
         org = Organism.Organism()
-        org.nodeGenes = dict(Common.ioNodes) # Call dict to make a new copy of ioNodes instead of pointing to the same underlying object 
+        org.nodeGenes = list(Common.ioNodes) # Call list to make a new copy of ioNodes instead of pointing to the same underlying object 
         population.append(org)
              
     ''' Launch program here '''

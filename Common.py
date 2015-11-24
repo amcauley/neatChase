@@ -1,5 +1,5 @@
 '''Population size'''
-popSize = 4
+popSize = 1
 
 '''Compatibility coefficients'''
 coefC1 = 1.0
@@ -35,8 +35,9 @@ nOutNodes = 2
 
 
 ''' Input/Output nodes. These will be common to all organisms, even if the i/o nodes
-    end up unused for a particular organism. Stored as a dictionary for fast lookup. '''
-ioNodes = {}
+    end up unused for a particular organism. Stored as a list, so order is important (input nodes first, then out nodes,
+    then anything else). '''
+ioNodes = []
 
 ''' Counters to track node innovation numbers '''
 lastNodeInnovation = -1
