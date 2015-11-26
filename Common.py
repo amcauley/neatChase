@@ -43,3 +43,5 @@ ioNodes = []
 lastNodeInnovation = -1
 lastConnNodeInnovation = -1
 
+''' Max Organism addConn() attempts before giving up. If we can't generate a valid connection after these many tries, just move on. '''
+maxAddConnAttempts = 3

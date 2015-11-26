@@ -78,7 +78,55 @@ class Organism:
     def addConn(self):
         ''' Adds a connection gene. After adding, check if the new node results in a loop. If so, regenerate a connection to use as the new one. Repeat until
             a valid non-looping connection is created. '''
-    
+            
+        success = 0
+        for k in range(Common.maxAddConnAttempts):
+            firstNode = random.choice(tuple(self.nodeGenes))
+            secondNode = random.choice(tuple(self.nodeGenes))
+            
+            ''' If we selected the same node twice, continue to next attempt. '''
+            if (firstNode == secondNode):
+                continue
+                
+            ''' Tentatively add connection to geneMap and check for a cycle. If no cycle, accept the new connection. If there is a cycle, remove the tentative
+                entry from geneMap and continue to a new attempt. '''
+            # Probably a better way to add an element to a set while creating a set if one didn't already exist. Look into this later. Also, maybe default to placing
+            # an empty set by default in geneMap when adding new nodes, so we can always assume some set exists, even if empty.
+            if (firstNode.nodeNum not in self.geneMap):
+                self.geneMap[firstNode.nodeNum] = set([secondNode.nodeNum])
+            else:
+                ''' If there's already a connection between first and second node, try generating a new combo. '''
+                if (secondNode.nodeNum in self.geneMap[firstNode.nodeNum]):
+                    continue
+                else:    
+                    ''' New connection - continue on to check for loops. '''
+                    self.geneMap[firstNode.nodeNum].add(secondNode.nodeNum)    
+                
+            if self.containsLoop():
+                ''' New connection creates a loop. Remove tentative entry from geneLoop and try again. '''
+                self.geneMap[firstNode.nodeNum].remove(secondNode.nodeNum)
+                continue
+            else:
+                ''' No loop. We already have the new connection in geneMap, just need to create a new connectionGene and add to self.connGenes. '''
+                newGene = Genes.ConnectionGene("Con")
+                newGene.conn = (firstNode.nodeNum, secondNode.nodeNum)
+                newGene.weight = 0; #default to no weight, i.e. useless connection. Evolution will later (probably) change this to nonzero.
+                self.connGenes.append(newGene)
+                success = 1
+                break
+                
+        print('addCon took ' + str(k+1) + ' attempts, success = ' + str(success) + '\n') 
+        return
+        
+        
+    def compOutput(self, inputValTuple):
+        ''' Take input array (one value per input node) and propagate those values through the neural network. The return value should be an outputValTuple,
+            which is a tuple of values, where index i corresponds to the ith output node, i ranges from 0 to Common.nOutNodes-1. 
+            
+            The plan is to breadth first search through geneMap using a queue of tuples/pairs: (nodeNum, inputVal). We'll initialize the queue of nodes to visit with
+            values from inputValTuple. outPutValTuple is initialized to all zeros, and each time we read an output node from the queue, we add the value fed to it to
+            the sum in the corresponding index. Once the queue is empty, we've visited all needed nodes and propagated all values, and our processing is done. '''
+            
         
     def __str__(self):
         retStr = ""
