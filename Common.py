@@ -39,6 +39,9 @@ nOutNodes = 2
     then anything else). '''
 ioNodes = []
 
+''' Common node -> index mapping for I/O node Genes. '''
+ioNodeMap = {}
+
 ''' Counters to track node innovation numbers '''
 lastNodeInnovation = -1
 lastConnNodeInnovation = -1

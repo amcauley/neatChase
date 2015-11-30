@@ -9,10 +9,10 @@ class NodeGene:
         self.species = -1
         
     def __str__(self):
-        return "num " + str(self.nodeNum) + "\n" +\
-               "type " + str(self.nodeType) + "\n" +\
-               "dis " + str(self.disabled) + "\n" +\
-               "spec " + str(self.species) + "\n"
+        return 'num ' + str(self.nodeNum) + '\n' +\
+               'type ' + str(self.nodeType) + '\n' +\
+               'dis ' + str(self.disabled) + '\n' +\
+               'spec ' + str(self.species) + '\n'
         
 class ConnectionGene:
     def __init__(self, type):
@@ -25,9 +25,9 @@ class ConnectionGene:
         self.weight = 0     # Connection weight
         
     def __str__(self):
-        return "num " + str(self.nodeNum) + "\n" +\
-               "type " + str(self.nodeType) + "\n" +\
-               "dis " + str(self.disabled) + "\n" +\
-               "spec " + str(self.species) + "\n" +\
-               "conn " + str(self.conn) + "\n" +\
-               "weight " + str(self.weight) + "\n"
+        return 'num ' + str(self.nodeNum) + '\n' +\
+               'type ' + str(self.nodeType) + '\n' +\
+               'dis ' + str(self.disabled) + '\n' +\
+               'spec ' + str(self.species) + '\n' +\
+               'conn ' + str(self.conn) + '\n' +\
+               'weight ' + str(self.weight) + '\n'
