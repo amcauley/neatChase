@@ -2,6 +2,7 @@ import Common
 import Genes
 import random
 import collections
+import utils
 
 def nodeHasLoop(org, nodeNum, visitedSet):
     ''' check if organism (org) has a loop containing nodeNum, using visitedSet to track which nodes
@@ -34,14 +35,18 @@ class Organism:
         ''' Dictionary mapping nodeGene nodeNum (key) to that node's index within self.nodeGenes. '''
         self.nodeMap = {}
         
+        ''' Dictionary where the key is a pair of (start node, dest. node) numbers, and the output is the index within the self.connGenes list corresponding to that
+            particular connection. Expected use steps are 1) look up genes connected to input node by using self.geneMap, 2) look up the connection gene index using
+            self.connMap, 3) retrieve the connection node from self.connGenes. '''
+        self.connMap = {}        
+        
         ''' Dictionary where the key is a nodeGene number, and the value is a set of all nodes the input nodeGene connects to (from this node to other nodes, not
         vice versa). This only tracks active nodes, not disabled ones. '''
         self.geneMap = {}
         
-        ''' Dictionary where the key is a pair of (start node, dest. node) numbers, and the output is the index within the self.connGenes list corresponding to that
-            particular connection. Expected use steps are 1) look up genes connected to input node by using self.geneMap, 2) look up the connection gene index using
-            self.connMap, 3) retrieve the connection node from self.connGenes. '''
-        self.connMap = {}
+        ''' Reverse of the geneMap dictionary: key is a node number, and output is the set of all nodes feeding into that key node. Input from node number -1 means this
+            is an input node. '''
+        self.revGeneMap = {}
         
     def containsLoop(self):
         ''' Check if this organism contains a loop in the nodes / directed graph. This is not currently supported.
@@ -67,13 +72,18 @@ class Organism:
             startNodeNum = connGene.conn[0]
             oldDestNodeNum = connGene.conn[1]
             
-            print('startNodeNum ' + str(startNodeNum) + ', oldDestNodeNum ' + str(oldDestNodeNum) + '\n')
+            #print('startNodeNum ' + str(startNodeNum) + ', oldDestNodeNum ' + str(oldDestNodeNum) + '\n')
             
             geneMapStartEntry = self.geneMap[startNodeNum]
             geneMapStartEntry.remove(oldDestNodeNum)
             del self.connMap[(startNodeNum, oldDestNodeNum)]
             geneMapStartEntry.add(newNode.nodeNum)
             self.geneMap[newNode.nodeNum] = set([oldDestNodeNum]) #syntax trickery to form set out of integer
+            
+            ''' Update revGeneMap. '''
+            self.revGeneMap[oldDestNodeNum].remove(startNodeNum) 
+            self.revGeneMap[oldDestNodeNum].add(newNode.nodeNum)
+            self.revGeneMap[newNode.nodeNum] = set([startNodeNum])
           
             ''' Disable the old connection gene - it will be replaced by two new ones (A->C becomes A->B and B->C, where B is the newly added node). '''
             connGene.disabled = True
@@ -127,6 +137,10 @@ class Organism:
                 continue
             else:
                 ''' No loop. We already have the new connection in geneMap, just need to create a new connectionGene and add to self.connGenes. '''
+                if (secondNode.nodeNum in self.revGeneMap):
+                    self.revGeneMap[secondNode.nodeNum].add(firstNode.nodeNum)
+                else:
+                    self.revGeneMap[secondNode.nodeNum] = set([firstNode.nodeNum])
                 newGene = Genes.ConnectionGene("Con")
                 newGene.conn = (firstNode.nodeNum, secondNode.nodeNum)
                 newGene.weight = 0 #default to no weight, i.e. useless connection. Evolution will later (probably) change this to nonzero.
@@ -135,7 +149,7 @@ class Organism:
                 success = 1
                 break
                 
-        print('addCon took ' + str(k+1) + ' attempts, success = ' + str(success) + '\n') 
+        print('addCon took ' + str(k+1) + ' attempts, success = ' + str(success)) 
         return
         
         
@@ -145,7 +159,11 @@ class Organism:
             
             The plan is to breadth first search through geneMap using a queue of tuples/pairs: (nodeNum, inputVal). We'll initialize the queue of nodes to visit with
             values from inputValList. outputValList is initialized to all zeros, and each time we read an output node from the queue, we add the value fed to it to
-            the sum in the corresponding index. Once the queue is empty, we've visited all needed nodes and propagated all values, and our processing is done. '''
+            the sum in the corresponding index. Once the queue is empty, we've visited all needed nodes and propagated all values, and our processing is done.
+
+            In order to support non-linear transfer functions of the node inputs, we need to sum all inputs before feeding into the transfer function (instead of feeding each
+            input into the transfer function and then summing the outputs). To do this, we keep a list of all inputs received into a node, and once all inputs have been
+            received (according to self.revGeneMap), then we can export this node's value to other nodes. '''
             
         q = collections.deque()
         outputValList = [0 for x in range(Common.nOutNodes)]
@@ -153,25 +171,39 @@ class Organism:
         ''' Make sure the inputValList is a valid length. '''
         assert(len(inputValList) == Common.nInNodes)
         
+        nodeInputs = {} #dictionary: key = node number, value is set input values. Once set size equals total number of inputs, node is ready for propagation
+        
         ''' Initialize processing queue to input nodes and their input vals. '''
         for idx in range(Common.nInNodes):
-            q.append((Common.ioNodes[idx].nodeNum, inputValList[idx])) #add tuple of (nodeNum, inputVal) to processing queue
+            num = Common.ioNodes[idx].nodeNum
+            q.append((num, inputValList[idx])) #add tuple of (nodeNum, inputVal) to processing queue
             
-        ''' While the queue isn't empty, propagate values to other nodes. It's fine to consider inputs separately and sum the results together because there are no loops
-            in our geneMap, so the output is a linear combination of inputs. This assumption won't hold if we allow cycles in the neural network (this is would be a
-            "Recurrent Neural Network (RNN)" ?). '''
         while q:
             (currNodeNum, currVal) = q.popleft()
             
-            #print('(currNodeNum, currVal) = ' + str((currNodeNum, currVal)))
-            if (self.nodeGenes[self.nodeMap[currNodeNum]].nodeType == 'Out'):
-                ''' This is an output node. Due to how we initially populate output nodes, if this is nodeNum i, then it's the (i - Common.nInNodes)th output node. '''
-                outputValList[currNodeNum - Common.nInNodes] = outputValList[currNodeNum - Common.nInNodes] + currVal
+            ''' Add input to node. '''
+            if (currNodeNum in nodeInputs):
+                nodeInputs[currNodeNum].add(currVal)
+            else:
+                nodeInputs[currNodeNum] = set([currVal])
+            
+            #print('(currNodeNum, inputVal) = ' + str((currNodeNum, currVal)))
+            
+            ''' If node has received all inputs, propagate values to next nodes. '''
+            if (len(nodeInputs[currNodeNum]) == len(self.revGeneMap[currNodeNum])):
                 
-            if (currNodeNum in self.geneMap): #TODO: if we add a null set to geneMap whenever we add a new node, we won't have to check if currNodeNum is a valid geneMap key
-                for nextNodeNum in self.geneMap[currNodeNum]:
-                    #print('nextNodeNum ' + str(nextNodeNum))
-                    q.append((nextNodeNum, currVal*self.connGenes[self.connMap[(currNodeNum, nextNodeNum)]].weight))
+                outputVal = utils.nodeTransferFunc(sum(nodeInputs[currNodeNum]))
+                
+                #print('(currNodeNum, outputVal) = ' + str((currNodeNum, outputVal)))
+                
+                if (self.nodeGenes[self.nodeMap[currNodeNum]].nodeType == 'Out'):
+                    ''' This is an output node. Due to how we initially populate output nodes, if this is nodeNum i, then it's the (i - Common.nInNodes)th output node. '''
+                    outputValList[currNodeNum - Common.nInNodes] = outputVal
+                    
+                if (currNodeNum in self.geneMap): #TODO: if we add a null set to geneMap whenever we add a new node, we won't have to check if currNodeNum is a valid geneMap key
+                    for nextNodeNum in self.geneMap[currNodeNum]:
+                        #print('nextNodeNum ' + str(nextNodeNum))
+                        q.append((nextNodeNum, outputVal*self.connGenes[self.connMap[(currNodeNum, nextNodeNum)]].weight))
             
         print('outputValList = ' + str(outputValList))    
         return outputValList
@@ -179,6 +211,6 @@ class Organism:
     def __str__(self):
         retStr = ""
         for node in self.nodeGenes:
-            retStr += str(node) + "\n"
+            retStr += str(node) + '\n'
         
         return retStr

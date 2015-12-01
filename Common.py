@@ -42,6 +42,9 @@ ioNodes = []
 ''' Common node -> index mapping for I/O node Genes. '''
 ioNodeMap = {}
 
+''' Initialize reverseGeneMap for input nodes. '''
+revMapInit = {}
+
 ''' Counters to track node innovation numbers '''
 lastNodeInnovation = -1
 lastConnNodeInnovation = -1

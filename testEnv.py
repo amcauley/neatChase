@@ -52,9 +52,15 @@ o.connGenes.append(c1)
 o.connMap[(n0.nodeNum, n3.nodeNum)] = len(o.connGenes) #update connMap when adding new connection
 o.connGenes.append(c2)
 
-''' Update geneMap. '''
+''' Update geneMap and revGeneMap. '''
+o.revGeneMap[n0.nodeNum] = set([-1])
+o.revGeneMap[n1.nodeNum] = set([-1])
+o.revGeneMap[n2.nodeNum] = set([-1])
 o.geneMap[n0.nodeNum] = set([n3.nodeNum, n4.nodeNum])
+o.revGeneMap[n3.nodeNum] = set([n0.nodeNum])
+o.revGeneMap[n4.nodeNum] = set([n0.nodeNum])
 o.geneMap[n4.nodeNum] = set([n3.nodeNum])
+o.revGeneMap[n3.nodeNum].add(n4.nodeNum)
 
 ''' Add a loop by adding connections n4 -> n3 -> n0 to the geneMap. Not actually creating connection genes
     for this test. '''

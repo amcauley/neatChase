@@ -9,39 +9,37 @@
             01 -> 1
             10 -> 1
             11 -> 1 
-            
-        We'll peg the output range between 0 and 1.   
 '''
 
 def fitness(org):
     
-    diffCnt = 0
+    outSum = 0
     
     ''' 0 XOR 0 = 0 '''
     input = [1, 0, 0]
     output = org.compOutput(input)
-    output = 1 - max(min(output[0], 1), 0)
-    diffCnt = diffCnt + output*output
+    output = 1 - output[0]
+    outSum = outSum + output*output
 
     ''' 0 XOR 1 = 1 '''
     input = [1, 0, 1]
     output = org.compOutput(input)
-    output = max(min(output[0], 1), 0)
-    diffCnt = diffCnt + output*output
+    output = output[0]
+    outSum = outSum + output*output
 
     ''' 1 XOR 0 = 1 '''
     input = [1, 1, 0]
     output = org.compOutput(input)
-    output = max(min(output[0], 1), 0)
-    diffCnt = diffCnt + output*output
+    output = output[0]
+    outSum = outSum + output*output
 
     ''' 1 XOR 1 = 0 '''
     input = [1, 1, 1]
     output = org.compOutput(input)
-    output = 1 - max(min(output[0], 1), 0)
-    diffCnt = diffCnt + output*output
+    output = 1 - output[0]
+    outSum = outSum + output*output
         
-    fitness = diffCnt
+    fitness = outSum
     
     print('fitness = ' + str(fitness))
     
