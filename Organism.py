@@ -208,6 +208,26 @@ class Organism:
         print('outputValList = ' + str(outputValList))    
         return outputValList
         
+    ''' Measure distance to otherNode as defined by Stanley pg.110 eq. 1. '''    
+    def compatDist(otherNode):
+        ''' First count number of disjoint node genes, that is genes that could have conceivably matched between
+            organisms but don't. For example, if one organism has genes 1 2 3 and 5, and the other has 1 2 4 5 and 6,
+            genes 3 and 4 are disjoint since they are within the overlapping range of genes (as given by innovation number)
+            but aren't shared. Gene 6 isn't shared, but it would count as an excess gene, since it's out of the range of what
+            the other organism has available. Excess is just sort of a different flavor of disjoint.
+
+            Since nodes are added to organisms in ascending order, just look at the last node to get the highest number.
+            All organisms should at least have the common input nodes, so there isn't a problem trying to index into an
+            empty list. '''
+        minMaxNodeNum = min(self.nodeGenes[-1], otherNode.nodeGenes[-1])
+        
+        ''' The plan for finding disjoint nodes is to add all nodes <= minMaxNodeNum from one organism into a set. Then
+            we'll go through the second organism for its nodes <= minMaxNodeNum and do the following:
+                1) If the nodeNum is already in the set (from the first organism), remove it.
+                2) Else, add the node to the set.
+            At the end of this process, the set should contain all disjoint nodes. '''
+        
+        
     def __str__(self):
         retStr = ""
         for node in self.nodeGenes:

@@ -2,6 +2,13 @@ import Common
 import Genes
 import Organism
 
+''' TODO:
+         - Implement compatibility distance measure (Stanley pg. 110) - in progress (1/17/16).
+         - Implement adjusted fitness measure (Stanley pg. 110) - should maybe implement a
+           population class to keep track of which species organisms belong to. This class could
+           maybe hold the adjusted fitness method.
+'''         
+
 def runProg():
     ''' Form common I/O nodes that will be used in all organisms.
         NOTE! Don't change order of populating ioNodes in input, then output, then any middle nodes,
