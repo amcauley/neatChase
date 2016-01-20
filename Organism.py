@@ -208,8 +208,8 @@ class Organism:
         print('outputValList = ' + str(outputValList))    
         return outputValList
         
-    ''' Measure distance to otherNode as defined by Stanley pg.110 eq. 1. '''    
-    def compatDist(otherNode):
+    ''' Measure distance to otherOrg as defined by Stanley pg.110 eq. 1. '''    
+    def compatDist(self, otherOrg):
         ''' First count number of disjoint node genes, that is genes that could have conceivably matched between
             organisms but don't. For example, if one organism has genes 1 2 3 and 5, and the other has 1 2 4 5 and 6,
             genes 3 and 4 are disjoint since they are within the overlapping range of genes (as given by innovation number)
@@ -219,14 +219,54 @@ class Organism:
             Since nodes are added to organisms in ascending order, just look at the last node to get the highest number.
             All organisms should at least have the common input nodes, so there isn't a problem trying to index into an
             empty list. '''
-        minMaxNodeNum = min(self.nodeGenes[-1], otherNode.nodeGenes[-1])
+        minMaxNodeNum = min(self.nodeGenes[-1].nodeNum, otherOrg.nodeGenes[-1].nodeNum)
+        
+        if (minMaxNodeNum == self.nodeGenes[-1]):
+            longNodeOrg = otherOrg
+        else:
+            longNodeOrg = self
         
         ''' The plan for finding disjoint nodes is to add all nodes <= minMaxNodeNum from one organism into a set. Then
             we'll go through the second organism for its nodes <= minMaxNodeNum and do the following:
                 1) If the nodeNum is already in the set (from the first organism), remove it.
                 2) Else, add the node to the set.
             At the end of this process, the set should contain all disjoint nodes. '''
+        disjointSet = set()
         
+        for node in self.nodeGenes:
+            if (node.nodeNum > minMaxNodeNum):
+                break
+            elif node.disabled:
+                continue
+            else:
+                disjointSet.add(node.nodeNum)
+                
+        for node in otherOrg.nodeGenes:
+            if (node.nodeNum > minMaxNodeNum):
+                break
+            elif node.disabled:
+                continue
+            elif node.nodeNum not in disjointSet:
+                disjointSet.add(node.nodeNum)
+            else:
+                disjointSet.remove(node.nodeNum)
+                
+        disjointCount = len(disjointSet)
+        print('node disjointCount: ' + str(disjointCount))
+        print('node disjointSet: ' + str(disjointSet))
+        
+        ''' To find excess genes, count from end of the longer gene until nodeNum <= minMaxNodeNum. '''
+        excessCount = 0
+        ind = len(longNodeOrg.nodeGenes) - 1
+        while (longNodeOrg.nodeGenes[ind].nodeNum > minMaxNodeNum):
+            excessCount = excessCount + 1
+            ind = ind - 1
+            if (ind <= 0):
+                break
+                
+        print('node excessCount: ' + str(excessCount))
+        
+        ''' Next: do the same for connection genes, then compt 
         
     def __str__(self):
         retStr = ""
