@@ -51,3 +51,6 @@ lastConnNodeInnovation = -1
 
 ''' Max Organism addConn() attempts before giving up. If we can't generate a valid connection after these many tries, just move on. '''
 maxAddConnAttempts = 3
+
+''' Compatibility distance threshold, d_t in Stanley pg. 110. ''' 
+compatThresh = 3.0

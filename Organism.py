@@ -266,7 +266,9 @@ class Organism:
                 
         print('node excessCount: ' + str(excessCount))
         
-        ''' Next: do the same for connection genes, then compt 
+        ''' Next: do the same for connection genes, with one modification. When a matching gene is found
+            and removed form the disjoingSet, add the weight difference to a running total. This total will be
+            used to calculate W hat in Eq. (1) of Stanley pg. 110. '''
         
     def __str__(self):
         retStr = ""
