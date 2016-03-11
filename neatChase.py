@@ -3,7 +3,6 @@ import Genes
 import Organism
 
 ''' TODO:
-         - Implement compatibility distance measure - Organism.compatDist(). See Stanley pg. 110 - in progress (3/9/16).
          - Implement adjusted fitness measure (Stanley pg. 110) - should maybe implement a
            population class to keep track of which species organisms belong to. This class could
            maybe hold the adjusted fitness method.

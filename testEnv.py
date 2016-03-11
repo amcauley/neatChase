@@ -1,5 +1,6 @@
-''' Set up a test environment for some interactive testing. Run this script from within Python's cmd line.
-    Ex) 1. 'C:\Python34\python.exe', 2. 'from testEnv import *' '''
+''' Set up a test environment for some interactive testing. Run this script from within Python's cmd line for interactive debugging.
+    Ex) 1. 'C:\Python34\python.exe', 2. 'from testEnv import *' 
+    To just run the script and print any output to console, just run 'C:\Python34\python.exe testEnv.py' directly. '''
 import Common
 import Genes
 import Organism
@@ -68,10 +69,25 @@ o0.revGeneMap[n3.nodeNum].add(n4.nodeNum)
 #o0.geneMap[n4.nodeNum] = set([n3.nodeNum])
 #o0.geneMap[n3.nodeNum] = set([n0.nodeNum])
 
+''' First check that compatibility distance between an organism and itself is 0. '''
+o0.compatDist(o0)
+
+print("")
+
 ''' Second organism based on the first. Disable node 2, which happens to be an input. '''
 o1 = copy.deepcopy(o0)
-o1.nodeGenes[2].disabled = True
-o1.addNode()
+o1.connGenes[1].weight = 0.25   #modify c1 weight (in c0 this is .6)
+o1.nodeGenes[2].disabled = True #disabled connection genes still contribute to weight mismatch
+o1.connGenes[2].weight = .55    #in c0 this is .4. Total weight mismatch, including connGenes[1] mismatch, is .5
+o1.addNode() #add 2 excess nodes (which creates 4 excess connections in the process)
 o1.addNode()
 
 ''' Compatibility distance between o0 and o1. '''
+o0.compatDist(o1)
+
+print("")
+
+''' Now add a new node to o0, which should change excess nodes to 1, disjoint nodes to 2,
+    excess conn to 2, and disjoint conn to 4. '''
+o0.addNode()
+o0.compatDist(o1)
