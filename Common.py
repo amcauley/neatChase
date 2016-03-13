@@ -1,5 +1,5 @@
 '''Population size'''
-popSize = 1
+popSize = 10
 
 '''Compatibility coefficients'''
 coefC1 = 1.0

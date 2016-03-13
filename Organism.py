@@ -273,64 +273,72 @@ class Organism:
         
         ''' Next: do the same for connection genes, with one modification. When a matching gene is found
             and removed form the disjoingSet, add the weight difference to a running total. This total will be
-            used to calculate W hat in Eq. (1) of Stanley pg. 110. '''
+            used to calculate W hat in Eq. (1) of Stanley pg. 110. If one or both of the organisms have no
+            connections (for example, if they're new), everything in the other organism is excess. '''
             
-        minMaxConnNum = min(self.connGenes[-1].nodeNum, otherOrg.connGenes[-1].nodeNum)
-        print('minMaxConnNum: ' + str(minMaxConnNum))
-        
-        if (minMaxConnNum == self.connGenes[-1].nodeNum):
-            longConnOrg = otherOrg
-            print('longConn (o) len: ' + str(longConnOrg.connGenes[-1].nodeNum) + ', shortConn len: ' + str(self.connGenes[-1].nodeNum))
-        else:
-            longConnOrg = self
-            print('longConn (s) len: ' + str(longConnOrg.connGenes[-1].nodeNum) + ', shortConn len: ' + str(otherOrg.connGenes[-1].nodeNum))
-            
-        ''' The plan for finding disjoint connections is to add all connections <= minMaxConnNum from one organism into a set. Then
-            we'll go through the second organism for its nodes <= minMaxConnNum and do the following:
-                1) If the nodeNum is already in the set (from the first organism), add difference in weight to running sum, then remove connection.
-                2) Else, add the connection to the set.
-            At the end of this process, the set should contain all disjoint nodes. '''
-        disjointSet = set()
-        
-        weightSum = 0.0 # Sum of weight mismatches.
-        numMatches = 0  # Number of matching genes (even if the weights don't actually match)
-        
-        for conn in self.connGenes:
-            if (conn.nodeNum > minMaxConnNum):
-                break
-            else:
-                disjointSet.add(conn.nodeNum)
-                
-        for conn in otherOrg.connGenes:
-            if (conn.nodeNum > minMaxConnNum):
-                break
-            elif conn.nodeNum not in disjointSet:
-                disjointSet.add(conn.nodeNum)
-            else:
-                ''' Normally to find the corresponding index of the connection gene in self.connGenes, we could use connMap like so:
-                    self.connGenes[self.connMap[conn.conn]]. However, in this case, conn could be for a disabled gene, which won't be
-                    in connMap (connMap only tracks enabled genes), but rather in disConnMap. '''
-                if conn.conn in self.connMap:
-                    connGene = self.connGenes[self.connMap[conn.conn]]
-                else:
-                    connGene = self.connGenes[self.disConnMap[conn.conn]]
-                    
-                weightSum = weightSum + abs(connGene.weight - conn.weight)
-                numMatches = numMatches + 1
-                disjointSet.remove(conn.nodeNum)
-                
-        disjointConn = len(disjointSet)
-        print('conn disjointCount: ' + str(disjointConn))
-        print('conn disjointSet: ' + str(disjointSet))
-        
-        ''' To find excess genes, count from end of the longer gene until nodeNum <= minMaxConnNum. '''
         excessConn = 0
-        ind = len(longConnOrg.connGenes) - 1
-        while (longConnOrg.connGenes[ind].nodeNum > minMaxConnNum):
-            excessConn = excessConn + 1
-            ind = ind - 1
-            if (ind <= 0):
-                break
+        disjointConn = 0
+        weightSum = 0
+        numMatches = 0
+           
+        if ((len(self.connGenes) == 0) or (len(otherOrg.connGenes) == 0)):
+            excessConn = max(len(self.connGenes), len(otherOrg.connGenes))
+        else:
+            minMaxConnNum = min(self.connGenes[-1].nodeNum, otherOrg.connGenes[-1].nodeNum)
+            print('minMaxConnNum: ' + str(minMaxConnNum))
+            
+            if (minMaxConnNum == self.connGenes[-1].nodeNum):
+                longConnOrg = otherOrg
+                print('longConn (o) len: ' + str(longConnOrg.connGenes[-1].nodeNum) + ', shortConn len: ' + str(self.connGenes[-1].nodeNum))
+            else:
+                longConnOrg = self
+                print('longConn (s) len: ' + str(longConnOrg.connGenes[-1].nodeNum) + ', shortConn len: ' + str(otherOrg.connGenes[-1].nodeNum))
+                
+            ''' The plan for finding disjoint connections is to add all connections <= minMaxConnNum from one organism into a set. Then
+                we'll go through the second organism for its nodes <= minMaxConnNum and do the following:
+                    1) If the nodeNum is already in the set (from the first organism), add difference in weight to running sum, then remove connection.
+                    2) Else, add the connection to the set.
+                At the end of this process, the set should contain all disjoint nodes. '''
+            disjointSet = set()
+            
+            weightSum = 0.0 # Sum of weight mismatches.
+            numMatches = 0  # Number of matching genes (even if the weights don't actually match)
+            
+            for conn in self.connGenes:
+                if (conn.nodeNum > minMaxConnNum):
+                    break
+                else:
+                    disjointSet.add(conn.nodeNum)
+                    
+            for conn in otherOrg.connGenes:
+                if (conn.nodeNum > minMaxConnNum):
+                    break
+                elif conn.nodeNum not in disjointSet:
+                    disjointSet.add(conn.nodeNum)
+                else:
+                    ''' Normally to find the corresponding index of the connection gene in self.connGenes, we could use connMap like so:
+                        self.connGenes[self.connMap[conn.conn]]. However, in this case, conn could be for a disabled gene, which won't be
+                        in connMap (connMap only tracks enabled genes), but rather in disConnMap. '''
+                    if conn.conn in self.connMap:
+                        connGene = self.connGenes[self.connMap[conn.conn]]
+                    else:
+                        connGene = self.connGenes[self.disConnMap[conn.conn]]
+                        
+                    weightSum = weightSum + abs(connGene.weight - conn.weight)
+                    numMatches = numMatches + 1
+                    disjointSet.remove(conn.nodeNum)
+                    
+            disjointConn = len(disjointSet)
+            print('conn disjointCount: ' + str(disjointConn))
+            print('conn disjointSet: ' + str(disjointSet))
+            
+            ''' To find excess genes, count from end of the longer gene until nodeNum <= minMaxConnNum. '''
+            ind = len(longConnOrg.connGenes) - 1
+            while (longConnOrg.connGenes[ind].nodeNum > minMaxConnNum):
+                excessConn = excessConn + 1
+                ind = ind - 1
+                if (ind <= 0):
+                    break
                 
         print('conn excessConn: ' + str(excessConn))    
         print('weightSum: ' + str(weightSum))
@@ -340,9 +348,12 @@ class Organism:
         print('maxGenomeSize: ' + str(maxGenomeSize))
      
         ''' This is the actual Eq. (1) computing the compatibility distance. '''
-        dist = (Common.coefC1*(excessNode + excessConn) + Common.coefC2*(disjointNode + disjointConn))/maxGenomeSize + Common.coefC3*weightSum/numMatches
+        dist = (Common.coefC1*(excessNode + excessConn) + Common.coefC2*(disjointNode + disjointConn))/maxGenomeSize
+        if numMatches > 0:
+            dist = dist + Common.coefC3*weightSum/numMatches
+                    
         print('compat dist: ' + str(dist))
-        
+        return dist
         
     def __str__(self):
         retStr = ""
