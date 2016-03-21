@@ -1,6 +1,16 @@
 '''Population size'''
 popSize = 10
 
+''' File defining the fitness metric. Each file has a 'fitness' function. This file will change
+    depending on the problem being investigated. ''' 
+fitnessFunc = 'fitness_1bitXOR'
+
+''' Flag to use randSeed below to seed the RNG. '''
+useFixedSeed = True
+
+''' Random number seed used for actual runs (testEnv doesn't necessarily use this). '''
+randSeed = 0
+
 '''Compatibility coefficients'''
 coefC1 = 1.0
 coefC2 = 1.0
@@ -54,3 +64,25 @@ maxAddConnAttempts = 3
 
 ''' Compatibility distance threshold, d_t in Stanley pg. 110. ''' 
 compatThresh = 3.0
+
+''' Probability of adding a new node during a mutation. '''
+addNodeProb = 0.1
+
+''' Probability of adding a new connection during a mutation. '''
+addConnProb = 0.15
+
+''' Probability of a genome having its connection weights mutated. '''
+weightMutateProbGenome = 0.8
+
+''' Probability of assigning new random weight if weights are being mutated.
+    This is the probability applied to each weight in the genome. '''
+weightMutateProb = 0.1
+
+''' Percent of offspring resulting from mutation without crossover. '''
+selfMutateRatio = 0.25
+
+''' Chance an inherited gene is disabled if it was disabled in either parent. '''
+stillDisProb = 0.75
+
+''' Interspecies mating rate. '''
+interSpecRate = 0.001 

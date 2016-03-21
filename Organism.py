@@ -3,6 +3,10 @@ import Genes
 import random
 import collections
 import utils
+import copy
+
+''' See http://stackoverflow.com/questions/6677424/how-do-i-import-variable-packages-in-python-like-using-variable-variables-i '''
+fitnessModule = __import__(Common.fitnessFunc) 
 
 def nodeHasLoop(org, nodeNum, visitedSet):
     ''' check if organism (org) has a loop containing nodeNum, using visitedSet to track which nodes
@@ -44,7 +48,7 @@ class Organism:
         self.disConnMap = {}
         
         ''' Dictionary where the key is a nodeGene number, and the value is a set of all nodes the input nodeGene connects to (from this node to other nodes, not
-        vice versa). This only tracks active nodes, not disabled ones. '''
+        vice versa). This only tracks active connections, not disabled ones. '''
         self.geneMap = {}
         
         ''' Reverse of the geneMap dictionary: key is a node number, and output is the set of all nodes feeding into that key node via non-disabled connections. Input from node 
@@ -60,7 +64,14 @@ class Organism:
         return False
 
         
-    def addNode(self):
+    def addNode(self, newNode = None):
+        ''' If newNode has a value, add that node into this organism and return. '''
+        if newNode is not None:
+            newIdx = len(self.nodeGenes)
+            self.nodeGenes.append(copy.deepcopy(newNode))
+            self.nodeMap[newNode.nodeNum] = newIdx
+            return
+    
         ''' Adds a node by splitting an existing connection. If no connection exists, don't do anything. '''
         if (len(self.connGenes) == 0):
             return
@@ -101,7 +112,9 @@ class Organism:
             newConn2.weight = 1 #to preserve original overall weight from A->C            
           
             ''' Update the organism with the new genes/connections. '''
+            newIdx = len(self.nodeGenes)
             self.nodeGenes.append(newNode)
+            self.nodeMap[newNode.nodeNum] = newIdx
             
             self.connMap[(startNodeNum, newNode.nodeNum)] = len(self.connGenes)            
             self.connGenes.append(newConn1)
@@ -110,10 +123,45 @@ class Organism:
             self.connGenes.append(newConn2) 
             
     
-    def addConn(self):
+    def addConn(self, newConn = None, refOrg = None):
         ''' Adds a connection gene. After adding, check if the new node results in a loop. If so, regenerate a connection to use as the new one. Repeat until
-            a valid non-looping connection is created. '''
+            a valid non-looping connection is created. If newConn and refOrg are not None, then we'll add newConn into this organism, and also add the starting and
+            ending node genes from refOrg into this organism if suitable nodes don't already exist. '''
+         
+        if newConn is not None:
             
+            if refOrg is None:
+                assert(False) #if newConn is provided (indicating we're adding an existing connection to this organism), a refOrg should also have been provided
+            
+            ''' Add the existing connection to this organism, and set up start/stop nodes if needed. '''
+            newIdx = len(self.connGenes)
+            self.connGenes.append(copy.deepcopy(newConn))
+            
+            (startNodeNum, endNodeNum) = newConn.conn
+            
+            if (newConn.disabled):
+                self.disConnMap[newConn.conn] = newIdx
+            else:
+                self.connMap[newConn.conn] = newIdx
+                if (startNodeNum in self.geneMap):
+                    self.geneMap[startNodeNum].add(endNodeNum) 
+                else:
+                    self.geneMap[startNodeNum] = set([endNodeNum])                    
+            
+                if (endNodeNum in self.revGeneMap):
+                    self.revGeneMap[endNodeNum].add(startNodeNum)
+                else:
+                    self.revGeneMap[endNodeNum] = set([startNodeNum])
+            
+            if startNodeNum not in self.nodeMap:
+                self.addNode(refOrg.nodeGenes[refOrg.nodeMap[startNodeNum]])
+        
+            if endNodeNum not in self.nodeMap:
+                self.addNode(refOrg.nodeGenes[refOrg.nodeMap[endNodeNum]])
+                
+            return
+        
+        ''' We're not adding an existing connection, so proceed with adding a newly created one: '''
         success = 0
         for k in range(Common.maxAddConnAttempts):
             firstNode = random.choice(tuple(self.nodeGenes))
@@ -155,7 +203,7 @@ class Organism:
                 success = 1
                 break
                 
-        print('addCon took ' + str(k+1) + ' attempts, success = ' + str(success)) 
+        print('addConn took ' + str(k+1) + ' attempts, success = ' + str(success)) 
         return
         
         
@@ -272,7 +320,7 @@ class Organism:
         print('node excessNode: ' + str(excessNode))
         
         ''' Next: do the same for connection genes, with one modification. When a matching gene is found
-            and removed form the disjoingSet, add the weight difference to a running total. This total will be
+            and removed form the disjointSet, add the weight difference to a running total. This total will be
             used to calculate W hat in Eq. (1) of Stanley pg. 110. If one or both of the organisms have no
             connections (for example, if they're new), everything in the other organism is excess. '''
             
@@ -355,6 +403,140 @@ class Organism:
         print('compat dist: ' + str(dist))
         return dist
         
+    ''' Compute the fitness for this organism. '''    
+    def compFitness(self):
+        self.fitness = fitnessModule.fitness(self)
+        return self.fitness
+        
+    ''' Run organism mutation, which can happen whether or not an organism is formed via mating. '''
+    def mutate(self):
+        if (random.random() < Common.addNodeProb):
+            self.addNode()
+            
+        if (random.random() < Common.addConnProb):
+            self.addConn()
+            
+        if (random.random() < Common.weightMutateProbGenome):
+            for conn in self.connGenes:
+                if (random.random() < Common.weightMutateProb):
+                    conn.weight = random.uniform(-1.0, 1.0)
+    
+    ''' Mate with another organism to produce an offspring. For matching genes between organisms, the
+        offspring will inherit randomly from either parent. For any disjoint or excess genes, the offspring
+        will inherit from the fitter parent. If fitnesses are equal, disjoint/excess genes are inherited
+        with equal probability from each parent (equal probability per gene). '''            
+    def mateWith(self, partner):
+    
+        ''' This is the offspring, which is the output/return value of this function. '''
+        offspring = Organism()
+    
+        ''' Start with the matching genes. We find the matching and disjoint genes in a similar way as used in
+            the compatDist method, which contains more notes on the code logic. '''
+        disjointSet = set()
+    
+        ''' First we'll handle nodes, then connections. '''
+    
+        ''' Equal fitnesses: '''
+        if (self.fitness == partner.fitness):
+            minMaxNodeNum = min(self.nodeGenes[-1].nodeNum, partner.nodeGenes[-1].nodeNum) #indexing won't fail, since there is at least num_input + num_output nodes 
+            
+            for node in self.nodeGenes:
+                if (node.nodeNum > minMaxNodeNum):
+                    break
+                else:
+                    disjointSet.add(node.nodeNum)
+                    
+            for node in partner.nodeGenes:
+                if (node.nodeNum > minMaxNodeNum):
+                    break
+                elif node.nodeNum not in disjointSet:
+                    disjointSet.add(node.nodeNum)
+                else:
+                    ''' Randomly add one of the matching nodes to the offspring and remove it from the disjoint set. Since nodes don't actually have distinguishing features
+                        other than the innovation number (which we just found to be matching between organisms), we can add a copy of either to the offspring. Make a copy
+                        instead of just copying the reference because conceptually the offspring has its own version, even though the values are the same. '''
+                    #disjointSet.remove(node.nodeNum) #No need to remove, since we don't actually use the remaining elements for anything.
+                    offspring.addNode(node)
+                             
+            ''' For the remaining disjoint/excess nodes, we could add them now, but the might not do anything by themselves. Instead, they'll have a chance to get added
+                when adding connection genes as part of the addConn method. '''
+            disjointSet = set()
+            
+            ''' For connections, if one of the parents has no connections, we'll randomly choose connections from the other parent. If both parents have connections,
+                for shared connections we'll randomly select which parent we inherit from for shared genes, and for disjoint genes, we'll randomly choose if we even pick
+                up that gene. '''
+            if len(self.connGenes) == 0:
+                for conn in partner.connGenes:
+                    if random.choice([True, False]):
+                        offspring.addConn(conn)
+            elif len(self.connGenes) == 0:
+                for conn in self.connGenes:
+                    if random.choice([True, False]):
+                        offspring.addConn(conn)                        
+            else:
+                for conn in partner.connGenes:
+                        disjointSet.add(conn.nodeNum)
+                        
+                for conn in self.connGenes:
+                    if conn.nodeNum not in disjointSet:
+                        ''' This is a disjoint/excess connection. Randomly decide if we want to inherit it or not. No need to add to disjointSet. '''
+                        if random.choice([True, False]):
+                            offspring.addConn(conn, self)
+                    else:
+                        ''' This connection gene is present in both parents. Randomly inherit it from either parent. '''
+                        if random.choice([True, False]):
+                            offspring.addConn(conn, self)
+                        else:
+                            if conn.conn in partner.connMap:
+                                newConn = partner.connGenes[partner.connMap[conn.conn]]
+                            else:
+                                newConn = partner.connGenes[partner.disConnMap[conn.conn]]
+                            
+                            offspring.addConn(newConn, partner)       
+                            
+                ''' The remaining connections are disjoint connections from partner. Randomly choose if we want to inherit it. '''
+                for conn in disjointSet:
+                    if random.choice([True, False]):
+                        offspring.addConn(conn, partner)
+        
+        else:
+            ''' One parent is more fit than the other: '''
+            if (self.fitness > partner.fitness):
+                fitOrg = self
+                weakOrg = partner
+            else:
+                fitOrg = partner
+                weakOrg = self
+            
+            ''' We're supposed to randomly select from parents any matching nodes, and disjoint/excess nodes will come from the fitter parent. Since node genes
+                don't have distinguishing features between organisms (other than node number, which makes them matching in the first place), we can just take
+                all nodes from the fitter parent. Since we also take all disjoint/excess nodes from the fitter parent, this simplifies to just taking all of the
+                fitter parent's node genes. Connection genes will need to actually select randomly since weights can differentiate otherwise matching genes. '''
+            for node in fitOrg.nodeGenes:
+                offspring.addNode(node)
+                               
+            for conn in weakOrg.connGenes:
+                    disjointSet.add(conn.nodeNum)
+                    
+            for conn in fitOrg.connGenes:
+                if conn.nodeNum not in disjointSet:
+                    ''' This is a disjoint or excess connection in the fitter parent. Offspring inherits it. '''
+                    offspring.addConn(conn, fitOrg)
+                else:
+                    ''' This connection gene is present in both parents. Randomly inherit it from either parent. '''
+                    #disjointSet.remove(node.nodeNum) #No need to remove - we won't use the disjointSet for anything after this.
+                    if random.choice([True, False]):
+                        offspring.addConn(conn, fitOrg)
+                    else:
+                        if conn.conn in weakOrg.connMap:
+                            weakConn = weakOrg.connGenes[weakOrg.connMap[conn.conn]]
+                        else:
+                            weakConn = weakOrg.connGenes[weakOrg.disConnMap[conn.conn]]
+                        
+                        offspring.addConn(weakConn, weakOrg)
+     
+        return offspring
+    
     def __str__(self):
         retStr = ""
         for node in self.nodeGenes:

@@ -2,10 +2,15 @@ import Common
 import Genes
 import Organism
 import Population
+import random
 
 ''' TODO:
-         - (3/12/16) Add mutation/breeding algorithms
+         - (3/12/16) Add mutation/breeding algorithms (in progress)
          - (3/12/16) Add population/species class testing to testEnv.py
+         - (3/20/16) Test out new mateWith Organism method. Code is written but not tested yet.
+         - (3/20/16) Need to add a disable/enable method for organisms to dis/enable connections,
+                     and then use this method to implement flipping disable state in offspring
+                     (per Stanley, there's a chance state will change).
 '''         
 
 ''' This is global to help debugging - we can access pop from the interpreter after running runProg. '''
@@ -26,6 +31,12 @@ def runProg():
         Common.ioNodeMap[newGene.nodeNum] = len(Common.ioNodes)
         Common.ioNodes.append(newGene)    
     
+    ''' Seed the RNG. '''
+    if Common.useFixedSeed:
+        random.seed(Common.randSeed)
+    else:
+        random.seed()
+    
     for n in range(Common.popSize):
         ''' Create new organism, then assign i/o nodes to it'''
         org = Organism.Organism()
@@ -34,6 +45,8 @@ def runProg():
         org.revGeneMap = dict(Common.revMapInit)
         org.addConn()
         pop.addOrg(org)
+        
+        org.compFitness()
              
     ''' Launch program here '''
     pop.speciate() # Since everything is the same at this point, everything will be grouped into a single species.

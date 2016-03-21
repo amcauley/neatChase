@@ -5,6 +5,11 @@ import Common
 import Genes
 import Organism
 import copy
+import random
+
+''' Seed the RNG. '''
+#random.seed(Common.randSeed)
+random.seed(0) #Always seed the same for testEnv, regardless of what non-test seed is.
 
 ''' Start by creating some nodes. '''
 n0 = Genes.NodeGene('In')
