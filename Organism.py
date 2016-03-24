@@ -232,6 +232,13 @@ class Organism:
             num = Common.ioNodes[idx].nodeNum
             q.append((num, inputValList[idx])) #add tuple of (nodeNum, inputVal) to processing queue
             
+        ''' Also initialize all disabled connections to pass in a value of 0. This is necessary for scenarios where the output somehow depends on a disabled connection,
+            but if we don't explicitly pass a value for these connections, the output node will see that not all of its input nodes haven't reported, and output won't
+            count the final value. Ex A->B->C and D->C, A and D are inputs, C is output, and A->B is disabled (maybe as part of a mutation or breeding of other organisms). C will never
+            report the final output since it's waiting on an input from B, that chain is never active because nothing ever gets set to input for B. '''
+        for conn in self.disConnMap:
+            q.append((conn[1], 0))
+            
         while q:
             (currNodeNum, currVal) = q.popleft()
             
@@ -259,7 +266,7 @@ class Organism:
                         #print('nextNodeNum ' + str(nextNodeNum))
                         q.append((nextNodeNum, outputVal*self.connGenes[self.connMap[(currNodeNum, nextNodeNum)]].weight))
             
-        print('outputValList = ' + str(outputValList))    
+        #print('outputValList = ' + str(outputValList))    
         return outputValList
         
     ''' Measure distance to otherOrg as defined by Stanley pg.110 eq. 1. '''    
@@ -274,14 +281,14 @@ class Organism:
             All organisms should at least have the common input nodes, so there isn't a problem trying to index into an
             empty list. '''
         minMaxNodeNum = min(self.nodeGenes[-1].nodeNum, otherOrg.nodeGenes[-1].nodeNum)
-        print('minMaxNodeNum: ' + str(minMaxNodeNum))
+        #print('minMaxNodeNum: ' + str(minMaxNodeNum))
         
         if (minMaxNodeNum == self.nodeGenes[-1].nodeNum):
             longNodeOrg = otherOrg
-            print('longNode (o) len: ' + str(longNodeOrg.nodeGenes[-1].nodeNum) + ', shortNode len: ' + str(self.nodeGenes[-1].nodeNum))
+            #print('longNode (o) len: ' + str(longNodeOrg.nodeGenes[-1].nodeNum) + ', shortNode len: ' + str(self.nodeGenes[-1].nodeNum))
         else:
             longNodeOrg = self
-            print('longNode (s) len: ' + str(longNodeOrg.nodeGenes[-1].nodeNum) + ', shortNode len: ' + str(otherOrg.nodeGenes[-1].nodeNum))
+            #print('longNode (s) len: ' + str(longNodeOrg.nodeGenes[-1].nodeNum) + ', shortNode len: ' + str(otherOrg.nodeGenes[-1].nodeNum))
             
         ''' The plan for finding disjoint nodes is to add all nodes <= minMaxNodeNum from one organism into a set. Then
             we'll go through the second organism for its nodes <= minMaxNodeNum and do the following:
@@ -305,8 +312,8 @@ class Organism:
                 disjointSet.remove(node.nodeNum)
                 
         disjointNode = len(disjointSet)
-        print('node disjointCount: ' + str(disjointNode))
-        print('node disjointSet: ' + str(disjointSet))
+        #print('node disjointCount: ' + str(disjointNode))
+        #print('node disjointSet: ' + str(disjointSet))
         
         ''' To find excess genes, count from end of the longer gene until nodeNum <= minMaxNodeNum. '''
         excessNode = 0
@@ -317,7 +324,7 @@ class Organism:
             if (ind <= 0):
                 break
                 
-        print('node excessNode: ' + str(excessNode))
+        #print('node excessNode: ' + str(excessNode))
         
         ''' Next: do the same for connection genes, with one modification. When a matching gene is found
             and removed form the disjointSet, add the weight difference to a running total. This total will be
@@ -333,14 +340,14 @@ class Organism:
             excessConn = max(len(self.connGenes), len(otherOrg.connGenes))
         else:
             minMaxConnNum = min(self.connGenes[-1].nodeNum, otherOrg.connGenes[-1].nodeNum)
-            print('minMaxConnNum: ' + str(minMaxConnNum))
+            #print('minMaxConnNum: ' + str(minMaxConnNum))
             
             if (minMaxConnNum == self.connGenes[-1].nodeNum):
                 longConnOrg = otherOrg
-                print('longConn (o) len: ' + str(longConnOrg.connGenes[-1].nodeNum) + ', shortConn len: ' + str(self.connGenes[-1].nodeNum))
+                #print('longConn (o) len: ' + str(longConnOrg.connGenes[-1].nodeNum) + ', shortConn len: ' + str(self.connGenes[-1].nodeNum))
             else:
                 longConnOrg = self
-                print('longConn (s) len: ' + str(longConnOrg.connGenes[-1].nodeNum) + ', shortConn len: ' + str(otherOrg.connGenes[-1].nodeNum))
+                #print('longConn (s) len: ' + str(longConnOrg.connGenes[-1].nodeNum) + ', shortConn len: ' + str(otherOrg.connGenes[-1].nodeNum))
                 
             ''' The plan for finding disjoint connections is to add all connections <= minMaxConnNum from one organism into a set. Then
                 we'll go through the second organism for its nodes <= minMaxConnNum and do the following:
@@ -377,8 +384,8 @@ class Organism:
                     disjointSet.remove(conn.nodeNum)
                     
             disjointConn = len(disjointSet)
-            print('conn disjointCount: ' + str(disjointConn))
-            print('conn disjointSet: ' + str(disjointSet))
+            #print('conn disjointCount: ' + str(disjointConn))
+            #print('conn disjointSet: ' + str(disjointSet))
             
             ''' To find excess genes, count from end of the longer gene until nodeNum <= minMaxConnNum. '''
             ind = len(longConnOrg.connGenes) - 1
@@ -388,19 +395,19 @@ class Organism:
                 if (ind <= 0):
                     break
                 
-        print('conn excessConn: ' + str(excessConn))    
-        print('weightSum: ' + str(weightSum))
-        print('numMatches: ' + str(numMatches))
+        #print('conn excessConn: ' + str(excessConn))    
+        #print('weightSum: ' + str(weightSum))
+        #print('numMatches: ' + str(numMatches))
      
         maxGenomeSize = max(len(self.nodeGenes) + len(self.connGenes), len(otherOrg.nodeGenes) + len(otherOrg.connGenes))
-        print('maxGenomeSize: ' + str(maxGenomeSize))
+        #print('maxGenomeSize: ' + str(maxGenomeSize))
      
         ''' This is the actual Eq. (1) computing the compatibility distance. '''
         dist = (Common.coefC1*(excessNode + excessConn) + Common.coefC2*(disjointNode + disjointConn))/maxGenomeSize
         if numMatches > 0:
             dist = dist + Common.coefC3*weightSum/numMatches
                     
-        print('compat dist: ' + str(dist))
+        #print('compat dist: ' + str(dist))
         return dist
         
     ''' Compute the fitness for this organism. '''    
@@ -430,11 +437,19 @@ class Organism:
         ''' This is the offspring, which is the output/return value of this function. '''
         offspring = Organism()
     
+        ''' Add common nodes/connections to the offspring. This could potentially be part of the Organism constructor. '''
+        #TODO: Move some functionality to constructor?
+        #offspring.nodeGenes = list(Common.ioNodes) #No need, I/O nodes will get picked up as part of mating routine further down.
+        offspring.nodeMap = dict(Common.ioNodeMap)
+        offspring.revGeneMap = dict(Common.revMapInit)    
+    
         ''' Start with the matching genes. We find the matching and disjoint genes in a similar way as used in
             the compatDist method, which contains more notes on the code logic. '''
         disjointSet = set()
     
         ''' First we'll handle nodes, then connections. '''
+    
+        #print("self fitness " + str(self.fitness) + ", partner " + str(partner.fitness))
     
         ''' Equal fitnesses: '''
         if (self.fitness == partner.fitness):
@@ -469,19 +484,22 @@ class Organism:
                 for conn in partner.connGenes:
                     if random.choice([True, False]):
                         offspring.addConn(conn)
+                        #print("Adding dis/ex gene (num, start, stop, dis): " + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
             elif len(self.connGenes) == 0:
                 for conn in self.connGenes:
                     if random.choice([True, False]):
-                        offspring.addConn(conn)                        
+                        offspring.addConn(conn)
+                        #print("Adding dis/ex gene (num, start, stop, dis): " + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
             else:
                 for conn in partner.connGenes:
-                        disjointSet.add(conn.nodeNum)
+                    disjointSet.add(conn.nodeNum)
                         
                 for conn in self.connGenes:
                     if conn.nodeNum not in disjointSet:
                         ''' This is a disjoint/excess connection. Randomly decide if we want to inherit it or not. No need to add to disjointSet. '''
                         if random.choice([True, False]):
                             offspring.addConn(conn, self)
+                            #print("Adding dis/ex gene (num, start, stop, dis): " + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
                     else:
                         ''' This connection gene is present in both parents. Randomly inherit it from either parent. '''
                         if random.choice([True, False]):
@@ -492,12 +510,21 @@ class Organism:
                             else:
                                 newConn = partner.connGenes[partner.disConnMap[conn.conn]]
                             
-                            offspring.addConn(newConn, partner)       
+                            offspring.addConn(newConn, partner) 
+                            #print("Adding matching gene (num, start, stop, dis): " + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
+                            
+                        disjointSet.remove(conn.nodeNum)    
                             
                 ''' The remaining connections are disjoint connections from partner. Randomly choose if we want to inherit it. '''
-                for conn in disjointSet:
+                #TODO: More efficient if we keep a dictionary mapping connection number to connection index in connGenes (like nodeMap),
+                #but will need a bit of rewriting and added sets to handle this. For now, just use inefficient search of all connections 
+                #to see if there's a match with connNum.
+                for connNum in disjointSet:
                     if random.choice([True, False]):
-                        offspring.addConn(conn, partner)
+                        for conn in partner.connGenes:
+                            if (conn.nodeNum == connNum):
+                                offspring.addConn(conn, partner)
+                                break
         
         else:
             ''' One parent is more fit than the other: '''
@@ -516,17 +543,19 @@ class Organism:
                 offspring.addNode(node)
                                
             for conn in weakOrg.connGenes:
-                    disjointSet.add(conn.nodeNum)
+                disjointSet.add(conn.nodeNum)
                     
             for conn in fitOrg.connGenes:
                 if conn.nodeNum not in disjointSet:
                     ''' This is a disjoint or excess connection in the fitter parent. Offspring inherits it. '''
                     offspring.addConn(conn, fitOrg)
+                    #print("Adding dis/ex gene (num, start, stop, dis): " + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
                 else:
                     ''' This connection gene is present in both parents. Randomly inherit it from either parent. '''
                     #disjointSet.remove(node.nodeNum) #No need to remove - we won't use the disjointSet for anything after this.
                     if random.choice([True, False]):
                         offspring.addConn(conn, fitOrg)
+                        #print("Adding fit gene (num, start, stop, dis): " + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
                     else:
                         if conn.conn in weakOrg.connMap:
                             weakConn = weakOrg.connGenes[weakOrg.connMap[conn.conn]]
@@ -534,6 +563,7 @@ class Organism:
                             weakConn = weakOrg.connGenes[weakOrg.disConnMap[conn.conn]]
                         
                         offspring.addConn(weakConn, weakOrg)
+                        #print("Adding weak gene (num, start, stop, dis): " + str((weakConn.nodeNum, weakConn.conn[0], weakConn.conn[1], weakConn.disabled)))
      
         return offspring
     

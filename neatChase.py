@@ -11,6 +11,8 @@ import random
          - (3/20/16) Need to add a disable/enable method for organisms to dis/enable connections,
                      and then use this method to implement flipping disable state in offspring
                      (per Stanley, there's a chance state will change).
+         - (3/23/16) Add new connection map to Organism that maps connection "nodeNum" to index
+                     within connGenes array. Also rename connection "nodeNum", since it's not a node.         
 '''         
 
 ''' This is global to help debugging - we can access pop from the interpreter after running runProg. '''

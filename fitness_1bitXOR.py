@@ -41,6 +41,6 @@ def fitness(org):
         
     fitness = outSum
     
-    print('fitness (1bitXOR) = ' + str(fitness))
+    #print('fitness (1bitXOR) = ' + str(fitness))
     
     return fitness

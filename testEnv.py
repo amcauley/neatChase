@@ -24,10 +24,13 @@ Common.nInNodes = 3;
 Common.nOutNodes = 1;
 Common.ioNodeMap[n0.nodeNum] = len(Common.ioNodes)
 Common.ioNodes.append(n0)
+Common.revMapInit[n0.nodeNum] = set([-1])
 Common.ioNodeMap[n1.nodeNum] = len(Common.ioNodes)
 Common.ioNodes.append(n1)
+Common.revMapInit[n1.nodeNum] = set([-1])
 Common.ioNodeMap[n2.nodeNum] = len(Common.ioNodes)
 Common.ioNodes.append(n2)
+Common.revMapInit[n2.nodeNum] = set([-1])
 Common.ioNodeMap[n3.nodeNum] = len(Common.ioNodes)
 Common.ioNodes.append(n3)
 
@@ -77,12 +80,9 @@ o0.revGeneMap[n3.nodeNum].add(n4.nodeNum)
 ''' First check that compatibility distance between an organism and itself is 0. '''
 o0.compatDist(o0)
 
-print("")
-
 ''' Second organism based on the first. Disable node 2, which happens to be an input. '''
 o1 = copy.deepcopy(o0)
 o1.connGenes[1].weight = 0.25   #modify c1 weight (in c0 this is .6)
-o1.nodeGenes[2].disabled = True #disabled connection genes still contribute to weight mismatch
 o1.connGenes[2].weight = .55    #in c0 this is .4. Total weight mismatch, including connGenes[1] mismatch, is .5
 o1.addNode() #add 2 excess nodes (which creates 4 excess connections in the process)
 o1.addNode()
@@ -90,9 +90,14 @@ o1.addNode()
 ''' Compatibility distance between o0 and o1. '''
 o0.compatDist(o1)
 
-print("")
-
 ''' Now add a new node to o0, which should change excess nodes to 1, disjoint nodes to 2,
     excess conn to 2, and disjoint conn to 4. '''
 o0.addNode()
 o0.compatDist(o1)
+
+o0.compFitness()
+o1.compFitness()
+
+''' Try some organism matings to see if the results make sense. '''
+o2 = o0.mateWith(o0) #self mating, so equal fitnesses
+o3 = o0.mateWith(o1)

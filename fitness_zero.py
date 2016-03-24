@@ -13,6 +13,6 @@
 
 def fitness(org):
     
-    print('fitness (zero) = 0')
+    #print('fitness (zero) = 0')
     
     return 0
