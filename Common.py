@@ -1,6 +1,9 @@
 '''Population size'''
 popSize = 10
 
+''' Threshold size of species, >= than which we will propagate the fittest organism into the next generation, unmodified. '''
+propFittestUnmodThresh = 4
+
 ''' File defining the fitness metric. Each file has a 'fitness' function. This file will change
     depending on the problem being investigated. ''' 
 fitnessFunc = 'fitness_1bitXOR'
