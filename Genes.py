@@ -4,7 +4,7 @@ class NodeGene:
     def __init__(self, type):
         Common.lastNodeInnovation += 1 # Bump up innovation counter
         self.nodeNum = Common.lastNodeInnovation # Node innovation number
-        self.nodeType = type
+        self.nodeType = type    
         
     def __str__(self):
         return 'num ' + str(self.nodeNum) + '\n' +\

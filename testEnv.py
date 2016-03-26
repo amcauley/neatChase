@@ -11,6 +11,9 @@ import random
 #random.seed(Common.randSeed)
 random.seed(0) #Always seed the same for testEnv, regardless of what non-test seed is.
 
+''' Enable extra messages. '''
+Common.extraPrintEn = True
+
 ''' Start by creating some nodes. '''
 n0 = Genes.NodeGene('In')
 n1 = Genes.NodeGene('In')
@@ -79,6 +82,7 @@ o0.revGeneMap[n3.nodeNum].add(n4.nodeNum)
 
 ''' First check that compatibility distance between an organism and itself is 0. '''
 o0.compatDist(o0)
+print('')
 
 ''' Second organism based on the first. Disable node 2, which happens to be an input. '''
 o1 = copy.deepcopy(o0)
@@ -89,11 +93,13 @@ o1.addNode()
 
 ''' Compatibility distance between o0 and o1. '''
 o0.compatDist(o1)
+print('')
 
-''' Now add a new node to o0, which should change excess nodes to 1, disjoint nodes to 2,
-    excess conn to 2, and disjoint conn to 4. '''
+''' Now add a new node to o0, which should change disjoint nodes to 2, excess nodes to 1,
+    disjoint conn to 4, and excess conn to 2. '''
 o0.addNode()
 o0.compatDist(o1)
+print('')
 
 o0.compFitness()
 o1.compFitness()

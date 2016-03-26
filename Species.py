@@ -2,6 +2,7 @@
     by Stanley pg. 110 Eq.(1), which is based on its compatDist from the species
     representative. '''
    
+import Common   
 import random    
 import copy    
     
@@ -72,21 +73,25 @@ class Species:
         ''' Handle portion of new generation formed from mutations without crossover. '''
         nSelfMutate = int(grant*Common.selfMutateRatio)
         while ((openSlots > 0) and (nSelfMutate > 0)):
-            mutOrg = copy.deepcopy(random.sample(self.orgs,1)[0])
-            newPop.add(mutOrg.mutate())
+            #print('nSelfMutate ' + str(nSelfMutate) + ' openSlots ' + str(openSlots) + ', newPop: ' + str(newPop))         
+            mutOrg = copy.deepcopy(random.sample(self.orgs,1)[0]) #TODO: This looks like it's taking a very long time in some instances.          
+            mutOrg.mutate()          
+            newPop.add(mutOrg)
             openSlots = openSlots-1
             nSelfMutate = nSelfMutate-1
             
+        #print('newPop: ' + str(newPop))    
+ 
         ''' Offspring formed by mating two random organisms from the previous generation. Even if there is only 1 organism
             in the species, it can mate with itself. '''
-        while (openSlots > 0)
+        while (openSlots > 0):
             ''' Call sample twice instead of a single sample of 2 organisms in case there's only 1 org in the species. '''
             parent1 = random.sample(self.orgs,1)[0]
             parent2 = random.sample(self.orgs,1)[0]
             newOrg = parent1.mateWith(parent2)
             newPop.add(newOrg)
-            openSlots = openSlots-1
-            
+            openSlots = openSlots-1          
+             
         ''' Update the fittest organism for the new generation. '''    
         if (len(newPop) > 0):    
             curFittest = random.sample(self.orgs,1)[0]
@@ -98,3 +103,7 @@ class Species:
             undergone the nextGen routine. '''        
         self.orgs = newPop
             
+            
+    ''' Implement less than, which will allow us to call .sort() on an array of species. '''        
+    def __lt__(self, other):
+        return self.adjFitSum < other.adjFitSum

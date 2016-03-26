@@ -11,8 +11,11 @@
             11 -> 1 
 '''
 
+import Common
+
 def fitness(org):
     
-    #print('fitness (zero) = 0')
+    if Common.extraPrintEn:
+        print('fitness (zero) = 0')
     
     return 0

@@ -1,5 +1,11 @@
 '''Population size'''
-popSize = 10
+popSize = 100
+
+''' Max number of generations to simulate. '''
+maxGens = 30
+
+''' Enable extra output messages. This will be turned on automatically if running the testEnv.py file. '''
+extraPrintEn = False
 
 ''' Threshold size of species, >= than which we will propagate the fittest organism into the next generation, unmodified. '''
 propFittestUnmodThresh = 4
@@ -65,8 +71,11 @@ lastConnNodeInnovation = -1
 ''' Max Organism addConn() attempts before giving up. If we can't generate a valid connection after these many tries, just move on. '''
 maxAddConnAttempts = 3
 
+''' Max attempts to add a new node - could fail if we don't find an enabled connection. '''
+maxAddNodeAttempts = 3
+
 ''' Compatibility distance threshold, d_t in Stanley pg. 110. ''' 
-compatThresh = 3.0
+compatThresh = 0.5
 
 ''' Probability of adding a new node during a mutation. '''
 addNodeProb = 0.1

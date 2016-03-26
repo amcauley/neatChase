@@ -11,6 +11,8 @@
             11 -> 1 
 '''
 
+import Common
+
 def fitness(org):
     
     outSum = 0
@@ -41,6 +43,7 @@ def fitness(org):
         
     fitness = outSum
     
-    #print('fitness (1bitXOR) = ' + str(fitness))
+    if Common.extraPrintEn:
+        print('fitness (1bitXOR) = ' + str(fitness))
     
     return fitness

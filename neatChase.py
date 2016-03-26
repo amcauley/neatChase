@@ -5,14 +5,14 @@ import Population
 import random
 
 ''' TODO:
-         - (3/12/16) Add mutation/breeding algorithms (in progress)
-         - (3/12/16) Add population/species class testing to testEnv.py
-         - (3/20/16) Test out new mateWith Organism method. Code is written but not tested yet.
          - (3/20/16) Need to add a disable/enable method for organisms to dis/enable connections,
                      and then use this method to implement flipping disable state in offspring
                      (per Stanley, there's a chance state will change).
          - (3/23/16) Add new connection map to Organism that maps connection "nodeNum" to index
                      within connGenes array. Also rename connection "nodeNum", since it's not a node.         
+         - (3/25/16) Random seed doesn't seem to be working - still seeing run-to-run variation. Why?
+         - (3/25/16) Can we replace deepcopy in Species.nextGen() with some kind of clone() method? 
+                     It's taking a very long time.
 '''         
 
 ''' This is global to help debugging - we can access pop from the interpreter after running runProg. '''
@@ -36,8 +36,7 @@ def runProg():
     ''' Seed the RNG. '''
     if Common.useFixedSeed:
         random.seed(Common.randSeed)
-    else:
-        random.seed()
+        print('RNG seed: ' + str(Common.randSeed))
     
     for n in range(Common.popSize):
         ''' Create new organism, then assign i/o nodes to it'''
@@ -50,9 +49,19 @@ def runProg():
         
         org.compFitness()
              
-    ''' Launch program here '''
-    pop.speciate() # Since everything is the same at this point, everything will be grouped into a single species.
+    ''' Launch program here: '''
     
+    ''' Initial speciation. '''
+    pop.speciate() # Since everything is the same at this point, everything will be grouped into a single species.
+    print('Gen 0')
+    print('Max Fitness: ' + str(pop.fittestOrg.fitness) + ', Num Species: ' + str(len(pop.species)) + '\n')
+   
+    ''' Run the simulation for the specified number of generations. '''
+    for gen in range(Common.maxGens):
+        print('Gen ' + str(gen) + ' -> Gen ' + str(gen+1))
+        pop.nextGen()
+        print('Max Fitness: ' + str(pop.fittestOrg.fitness) + ', Num Species: ' + str(len(pop.species)) + '\n')
+   
 if __name__ == "__main__":
     runProg()
     
