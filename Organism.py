@@ -58,7 +58,35 @@ class Organism:
         ''' If this organism is a cross of two other organisms, record them here. Useful for debugging. '''
         self.parents = [None, None]
     
-
+    def clone(self):
+        ''' Return a copy of this organism that isn't just a reference to the original. Use this for getting a deep copy of this organism. '''
+        newOrg = Organism()
+        newOrg.fitness = self.fitness
+        newOrg.species = self.species
+        newOrg.nodeGenes = []
+        for node in self.nodeGenes:
+            newOrg.nodeGenes.append(node.clone())
+        newOrg.connGenes = []
+        for conn in self.connGenes:
+            newOrg.connGenes.append(conn.clone())
+        newOrg.nodeMap = dict(self.nodeMap)
+        newOrg.connMap = dict(self.connMap)
+        newOrg.disConnMap = dict(self.disConnMap)
+        
+        '''GeneMap and revGeneMap are dictionaries of sets. Need to make a copy of the internal sets. '''
+        newOrg.geneMap = {}
+        for key in self.geneMap:
+            newOrg.geneMap[key] = set(self.geneMap[key])
+        
+        newOrg.revGeneMap = {}
+        for key in self.revGeneMap:
+            newOrg.revGeneMap[key] = set(self.revGeneMap[key])
+        
+        ''' Parents doesn't get a deep copy, but parents is only to help with debugging. We should never modify anything through the parents
+            list in the first place. '''
+        newOrg.parents = self.parents
+        
+        return newOrg
     
     def containsLoop(self):
         ''' Check if this organism contains a loop in the nodes / directed graph. This is not currently supported.
@@ -66,6 +94,13 @@ class Organism:
         for inputNodeIdx in range(Common.nInNodes):
             if nodeHasLoop(self, self.nodeGenes[inputNodeIdx].nodeNum, set()): #start with an empty visitedSet - faster (on average) than initializing with inputNode, and a loop will still be detected anyway.
                 return True
+                
+        ''' Since we'll add pseudo inputs to disabled connections during output computation, we also need to check for loops on any disabled connections,
+            which could be completely disconnected from the input but still cause infinite loops during output computation. '''
+        for conn in self.disConnMap:
+            if nodeHasLoop(self, conn[1], set()):
+                return True
+        
         return False
 
         
@@ -73,7 +108,7 @@ class Organism:
         ''' If newNode has a value, add that node into this organism and return. '''
         if newNode is not None:
             newIdx = len(self.nodeGenes)
-            self.nodeGenes.append(copy.deepcopy(newNode))
+            self.nodeGenes.append(newNode.clone())
             self.nodeMap[newNode.nodeNum] = newIdx
             return
     
@@ -149,7 +184,7 @@ class Organism:
             
             ''' Add the existing connection to this organism, and set up start/stop nodes if needed. '''
             newIdx = len(self.connGenes)
-            self.connGenes.append(copy.deepcopy(newConn))
+            self.connGenes.append(newConn.clone())
             
             (startNodeNum, endNodeNum) = newConn.conn
             
@@ -167,12 +202,33 @@ class Organism:
                 else:
                     self.revGeneMap[endNodeNum] = set([startNodeNum])
             
+            addedStartNode = False
+            addedEndNode = False
             if startNodeNum not in self.nodeMap:
                 self.addNode(refOrg.nodeGenes[refOrg.nodeMap[startNodeNum]])
+                addedStartNode = True
         
             if endNodeNum not in self.nodeMap:
                 self.addNode(refOrg.nodeGenes[refOrg.nodeMap[endNodeNum]])
+                addedEndNode = True
                 
+            ''' Check if this new connection introduces a loop - if it does, back out the new connection and any nodes
+                that were added to support it. '''
+            if self.containsLoop():
+                self.connGenes.remove(self.connGenes[-1])
+                if (newConn.disabled):
+                    del self.disConnMap[newConn.conn]
+                else:
+                    del self.connMap[newConn.conn]
+                self.geneMap[startNodeNum].remove(endNodeNum)
+                self.revGeneMap[endNodeNum].remove(startNodeNum)
+                if (addedStartNode):
+                    self.nodeGenes.remove(self.nodeGenes[-1])
+                    del self.nodeMap[startNodeNum]
+                if (addedEndNode):
+                    self.nodeGenes.remove(self.nodeGenes[-1])
+                    del self.nodeMap[endNodeNum]
+                    
             return
         
         ''' We're not adding an existing connection, so proceed with adding a newly created one. Don't add a duplicate, though
@@ -185,7 +241,13 @@ class Organism:
             ''' If we selected the same node twice, continue to next attempt. '''
             if (firstNode == secondNode):
                 continue
-                
+             
+            ''' Don't connect TO an input node - this could prevent the node from generating output. Ex. Z->A->B, A = input node, 
+                B = mid/out node, Z = mid/out node. A won't propagate output to B in compOutput() since it will always be waiting on
+                input from Z, which won't ever arrive (since B isn't an input node and has no input from an input node in this example). '''
+            if (secondNode.nodeType == 'In'):
+                continue
+             
             ''' Doesn't count if we already have a connection between these nodes. NO DUPLICATES ALLOWED! '''
             trialConn = (firstNode.nodeNum, secondNode.nodeNum)
             if ((trialConn in self.connMap) or (trialConn in self.disConnMap)):
@@ -259,8 +321,25 @@ class Organism:
         for conn in self.disConnMap:
             q.append((conn[1], 0))
             
+        cntr = 0            
         while q:
             (currNodeNum, currVal) = q.popleft()
+            
+            if (cntr > 1000): #Debug, attempt to catch infinite loops
+                print(q)
+                print('(curNode, curVal) = ' + str((currNodeNum, currVal)))
+                print('connMap:')
+                print(str(self.connMap))
+                print('geneMap:')
+                print(str(self.geneMap))
+                print('connGenes:')
+                for connG in self.connGenes:
+                    print(str(connG))
+                print('nodeGenes:')
+                for nodeG in self.nodeGenes:
+                    print(str(nodeG))
+                assert(0) #compOutput() appears to be stuck in an infinite loop
+            cntr += 1    
             
             ''' Skip this node if it isn't in revGeneMap (this situation could arise due to strings of disabled connections and the pseudo inputs provided above). '''
             if currNodeNum not in self.revGeneMap:

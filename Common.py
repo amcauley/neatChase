@@ -2,7 +2,7 @@
 popSize = 100
 
 ''' Max number of generations to simulate. '''
-maxGens = 30
+maxGens = 100
 
 ''' Enable extra output messages. This will be turned on automatically if running the testEnv.py file. '''
 extraPrintEn = False
@@ -75,7 +75,7 @@ maxAddConnAttempts = 3
 maxAddNodeAttempts = 3
 
 ''' Compatibility distance threshold, d_t in Stanley pg. 110. ''' 
-compatThresh = 0.5
+compatThresh = 0.25
 
 ''' Probability of adding a new node during a mutation. '''
 addNodeProb = 0.1

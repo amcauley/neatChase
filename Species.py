@@ -28,7 +28,7 @@ class Species:
         
     ''' Clear all organisms (but keep representative intact). '''    
     def clearOrgs(self):
-        self.orgs.clear
+        self.orgs.clear()
         
     ''' Check if the species is dead (empty). '''    
     def isEmpty(self):
@@ -74,7 +74,8 @@ class Species:
         nSelfMutate = int(grant*Common.selfMutateRatio)
         while ((openSlots > 0) and (nSelfMutate > 0)):
             #print('nSelfMutate ' + str(nSelfMutate) + ' openSlots ' + str(openSlots) + ', newPop: ' + str(newPop))         
-            mutOrg = copy.deepcopy(random.sample(self.orgs,1)[0]) #TODO: This looks like it's taking a very long time in some instances.          
+            mutOrg = random.sample(self.orgs,1)[0].clone()
+            #mutOrg = copy.deepcopy(random.sample(self.orgs,1)[0])
             mutOrg.mutate()          
             newPop.add(mutOrg)
             openSlots = openSlots-1

@@ -57,12 +57,18 @@ class Population:
             if not foundSpec:
                 self.species.add(Species.Species({org}))
                 
-        ''' Delete any dead (empty) species, and assign new representative to keep it up to date. '''
+        ''' Delete any dead (empty) species, and assign new representative to keep it up to date.
+            Temporarily store removal species in a separate set, otherwise we'll get errors about
+            self.species changing size in the middle of iterating over it. '''
+        removalSet = set()
         for spec in self.species:
             if spec.isEmpty():
-                self.species.remove(spec)
+                removalSet.add(spec)
             else:
                 spec.updateRep()
+                
+        for spec in removalSet:
+            self.species.remove(spec)
                     
         
     ''' Progress population into the next generation. We'll sort species by adjusted fitness and then

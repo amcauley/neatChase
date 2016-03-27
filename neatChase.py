@@ -61,6 +61,9 @@ def runProg():
         print('Gen ' + str(gen) + ' -> Gen ' + str(gen+1))
         pop.nextGen()
         print('Max Fitness: ' + str(pop.fittestOrg.fitness) + ', Num Species: ' + str(len(pop.species)) + '\n')
+        
+        ''' Sanity checks. '''
+        assert(len(pop.orgs) == Common.popSize)
    
 if __name__ == "__main__":
     runProg()
