@@ -9,10 +9,12 @@ import random
                      and then use this method to implement flipping disable state in offspring
                      (per Stanley, there's a chance state will change).
          - (3/23/16) Add new connection map to Organism that maps connection "nodeNum" to index
-                     within connGenes array. Also rename connection "nodeNum", since it's not a node.         
+                     within connGenes array (maybe). Also rename connection "nodeNum", since it's not a node.         
          - (3/25/16) Random seed doesn't seem to be working - still seeing run-to-run variation. Why?
-         - (3/27/16) Add phenotype initialization routine to implement figure 5(a) (Stanley pg. 113).
 '''         
+
+''' Import the specified file for initializing organisms. '''
+initOrgModule = __import__(Common.initOrgFile) 
 
 ''' This is global to help debugging - we can access pop from the interpreter after running runProg. '''
 pop = Population.Population()
@@ -39,16 +41,9 @@ def runProg():
     
     for n in range(Common.popSize):
         ''' Create new organism, then assign i/o nodes to it'''
-        org = Organism.Organism()
-        org.nodeGenes = list(Common.ioNodes) # Call list to make a new copy of ioNodes instead of pointing to the same underlying object.
-        org.nodeMap = dict(Common.ioNodeMap)
-        org.revGeneMap = dict(Common.revMapInit)
-        org.addConn()
+        org = initOrgModule.initOrg()
         pop.addOrg(org)
-        
         org.compFitness()
-             
-    ''' Launch program here: '''
     
     ''' Initial speciation. '''
     pop.speciate() # Since everything is the same at this point, everything will be grouped into a single species.

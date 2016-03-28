@@ -16,6 +16,7 @@
 import Common
 
 def fitness(org):
+    assert(Common.initOrgFile == 'initOrg_1bitXOR')
     
     outSum = 0
     
@@ -23,27 +24,28 @@ def fitness(org):
     input = [1, 0, 0]
     output = org.compOutput(input)
     output = 1 - output[0]
-    outSum = outSum + output*output
+    outSum += output
 
     ''' 0 XOR 1 = 1 '''
     input = [1, 0, 1]
     output = org.compOutput(input)
     output = output[0]
-    outSum = outSum + output*output
+    outSum += output
 
     ''' 1 XOR 0 = 1 '''
     input = [1, 1, 0]
     output = org.compOutput(input)
     output = output[0]
-    outSum = outSum + output*output
+    outSum += output
 
     ''' 1 XOR 1 = 0 '''
     input = [1, 1, 1]
     output = org.compOutput(input)
     output = 1 - output[0]
-    outSum = outSum + output*output
+    outSum += output
         
-    fitness = outSum
+    fitness = 4.0 - outSum
+    fitness = fitness*fitness
     
     if Common.extraPrintEn:
         print('fitness (1bitXOR) = ' + str(fitness))

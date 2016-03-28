@@ -17,6 +17,8 @@ propFittestUnmodThresh = 4
     depending on the problem being investigated. ''' 
 fitnessFunc = 'fitness_1bitXOR'
 
+initOrgFile = 'initOrg_1bitXOR'
+
 ''' Flag to use randSeed below to seed the RNG. '''
 useFixedSeed = True
 
