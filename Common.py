@@ -1,11 +1,11 @@
 '''Population size'''
-popSize = 300
+popSize = 100
 
 ''' Max number of generations to simulate. '''
-maxGens = 150
+maxGens = 200
 
 ''' Compatibility distance threshold, d_t in Stanley pg. 110. ''' 
-compatThresh = 0.5
+compatThresh = 0.6
 
 ''' Enable extra output messages. This will be turned on automatically if running the testEnv.py file. '''
 extraPrintEn = False

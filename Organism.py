@@ -229,8 +229,8 @@ class Organism:
                     del self.disConnMap[newConn.conn]
                 else:
                     del self.connMap[newConn.conn]
-                self.geneMap[startNodeNum].remove(endNodeNum)
-                self.revGeneMap[endNodeNum].remove(startNodeNum)
+                    self.geneMap[startNodeNum].remove(endNodeNum)
+                    self.revGeneMap[endNodeNum].remove(startNodeNum)
                 if (addedStartNode):
                     self.nodeGenes.remove(self.nodeGenes[-1])
                     del self.nodeMap[startNodeNum]

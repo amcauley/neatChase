@@ -50,15 +50,32 @@ def runProg():
     print('Gen 0')
     print('Max Fitness: ' + str(pop.fittestOrg.fitness) + ', Num Species: ' + str(len(pop.species)) + '\n')
    
+    fittestEver = pop.fittestOrg
+   
     ''' Run the simulation for the specified number of generations. '''
     for gen in range(Common.maxGens):
         print('Gen ' + str(gen) + ' -> Gen ' + str(gen+1))
         pop.nextGen()
-        print('Max Fitness: ' + str(pop.fittestOrg.fitness) + ', Num Species: ' + str(len(pop.species)) + '\n')
+        thisGenFittest = pop.fittestOrg
+        print('Max Fitness: ' + str(thisGenFittest.fitness) + ', Num Species: ' + str(len(pop.species)) + '\n')
+        
+        if (thisGenFittest.fitness > fittestEver.fitness):
+            fittestEver = thisGenFittest
         
         ''' Sanity checks. '''
         assert(len(pop.orgs) == Common.popSize)
    
+    print('____________End_Simulation____________')
+    print('Top Nodes:')
+    for node in fittestEver.nodeGenes:
+        print(node)
+    print('____________')
+    print('Top Conns:')
+    for conn in fittestEver.connGenes:
+        print(conn)
+    print('____________')
+    print('Top Fitness: ' + str(fittestEver.fitness))
+    
 if __name__ == "__main__":
     runProg()
     
