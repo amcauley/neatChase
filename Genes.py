@@ -5,17 +5,20 @@ class NodeGene:
         if not skipInc:
             Common.lastNodeInnovation += 1 # Bump up innovation counter
         self.nodeNum = Common.lastNodeInnovation # Node innovation number
-        self.nodeType = type    
+        self.nodeType = type #In, Mid, Out    
+        self.thresh = 0.0 #Threshold for outputting 0 or 1 (roughly speaking, since transfer function can be continuous, allowing numbers in between)
         
     ''' Return a new instance of this gene. '''    
     def clone(self):    
         newNode = NodeGene(self.nodeType, True)
         newNode.nodeNum = self.nodeNum
+        newNode.thresh = self.thresh
         return newNode
         
     def __str__(self):
         return 'num ' + str(self.nodeNum) + '\n' +\
-               'type ' + str(self.nodeType) + '\n'
+               'type ' + str(self.nodeType) + '\n' +\
+               'thresh ' + str(self.thresh) + '\n'
         
 class ConnectionGene:
     def __init__(self, type, skipInc = False):

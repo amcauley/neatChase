@@ -1,8 +1,11 @@
 '''Population size'''
-popSize = 100
+popSize = 300
 
 ''' Max number of generations to simulate. '''
-maxGens = 100
+maxGens = 150
+
+''' Compatibility distance threshold, d_t in Stanley pg. 110. ''' 
+compatThresh = 0.5
 
 ''' Enable extra output messages. This will be turned on automatically if running the testEnv.py file. '''
 extraPrintEn = False
@@ -24,6 +27,10 @@ randSeed = 0
 coefC1 = 1.0
 coefC2 = 1.0
 coefC3 = 0.4
+
+''' Upper and lower limits for transfer function threshold. '''
+tfThreshLow  = -5.0
+tfThreshHigh =  5.0
 
 ''' Square sensor grid size, centered on organism. Should be an odd number so that organism occupies the center square. '''
 sensorGridDim = 3
@@ -74,9 +81,6 @@ maxAddConnAttempts = 3
 ''' Max attempts to add a new node - could fail if we don't find an enabled connection. '''
 maxAddNodeAttempts = 3
 
-''' Compatibility distance threshold, d_t in Stanley pg. 110. ''' 
-compatThresh = 0.25
-
 ''' Probability of adding a new node during a mutation. '''
 addNodeProb = 0.1
 
@@ -84,11 +88,18 @@ addNodeProb = 0.1
 addConnProb = 0.15
 
 ''' Probability of a genome having its connection weights mutated. '''
-weightMutateProbGenome = 0.8
+weightMutateProbGenomeConn = 0.8
 
-''' Probability of assigning new random weight if weights are being mutated.
-    This is the probability applied to each weight in the genome. '''
-weightMutateProb = 0.1
+''' Probability of assigning new random weight if connection weights are being mutated.
+    This is the probability applied to each connection weight in the genome. '''
+weightMutateProbConn = 0.1
+
+''' Probability of a genome having its node weights/thresholds mutated. '''
+weightMutateProbGenomeNode = 0.5
+
+''' Probability of assigning new random weight/threshold if node weights are being mutated.
+    This is the probability applied to each node weight/threshold in the genome. '''
+weightMutateProbNode = 0.1
 
 ''' Percent of offspring resulting from mutation without crossover. '''
 selfMutateRatio = 0.25

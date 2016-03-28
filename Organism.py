@@ -107,9 +107,18 @@ class Organism:
     def addNode(self, newNode = None):
         ''' If newNode has a value, add that node into this organism and return. '''
         if newNode is not None:
-            newIdx = len(self.nodeGenes)
-            self.nodeGenes.append(newNode.clone())
-            self.nodeMap[newNode.nodeNum] = newIdx
+            ''' If this node is already present, don't do anything. '''
+            if newNode.nodeNum not in self.nodeMap:
+                newIdx = len(self.nodeGenes)
+                self.nodeGenes.append(newNode.clone())
+                self.nodeMap[newNode.nodeNum] = newIdx
+            #else:
+                #print('dup node:')
+                #print(str(newNode))
+                #print('nodeMap: ' + str(self.nodeMap))
+                #print('existing nodes:')
+                #for node in self.nodeGenes:
+                #    print(str(node))
             return
     
         ''' Adds a node by splitting an existing connection. If no connection exists, don't do anything. '''
@@ -356,7 +365,7 @@ class Organism:
             ''' If node has received all inputs, propagate values to next nodes. '''
             if (len(nodeInputs[currNodeNum]) == len(self.revGeneMap[currNodeNum])):
                 
-                outputVal = utils.nodeTransferFunc(sum(nodeInputs[currNodeNum]))
+                outputVal = utils.nodeTransferFunc(sum(nodeInputs[currNodeNum]), self.nodeGenes[self.nodeMap[currNodeNum]].thresh)
                 
                 #print('(currNodeNum, outputVal) = ' + str((currNodeNum, outputVal)))
                 
@@ -397,18 +406,23 @@ class Organism:
         
         disjointSet = set()
         excessNode = 0
-        
+ 
+        weightSum = 0.0 # Sum of weight mismatches.
+        numMatches = 0  # Number of matching genes (even if the weights don't actually match)
+ 
         for node in self.nodeGenes:
             if (node.nodeNum > minMaxNodeNum):
-                excessNode = excessNode + 1
+                excessNode += 1
             else:
                 disjointSet.add(node.nodeNum)
                 
         for node in otherOrg.nodeGenes:
             if (node.nodeNum > minMaxNodeNum):
-                excessNode = excessNode + 1
+                excessNode += 1
             elif node.nodeNum in disjointSet:
-                disjointSet.remove(node.nodeNum)                
+                disjointSet.remove(node.nodeNum)
+                numMatches += 1
+                weightSum = weightSum + abs(node.thresh - self.nodeGenes[self.nodeMap[node.nodeNum]].thresh)
             else:
                 disjointSet.add(node.nodeNum)
         
@@ -439,19 +453,17 @@ class Organism:
 
             minMaxNodeNum = min(maxSelfNodeNum, maxOtherNodeNum)
             
-            disjointSet = set()                
-            weightSum = 0.0 # Sum of weight mismatches.
-            numMatches = 0  # Number of matching genes (even if the weights don't actually match)            
+            disjointSet = set()                            
             
             for conn in self.connGenes:
                 if (conn.nodeNum > minMaxNodeNum):
-                    excessConn = excessConn + 1
+                    excessConn += 1
                 else:
                     disjointSet.add(conn.nodeNum)
                     
             for conn in otherOrg.connGenes:
                 if (conn.nodeNum > minMaxNodeNum):
-                    excessConn = excessConn + 1
+                    excessConn += 1
                 elif conn.nodeNum in disjointSet:
                     ''' Normally to find the corresponding index of the connection gene in self.connGenes, we could use connMap like so:
                         self.connGenes[self.connMap[conn.conn]]. However, in this case, conn could be for a disabled gene, which won't be
@@ -461,7 +473,7 @@ class Organism:
                     else:
                         connGene = self.connGenes[self.disConnMap[conn.conn]]                         
                     weightSum = weightSum + abs(connGene.weight - conn.weight)
-                    numMatches = numMatches + 1
+                    numMatches += 1
                     disjointSet.remove(conn.nodeNum)                      
                 else:
                     disjointSet.add(conn.nodeNum)            
@@ -500,17 +512,21 @@ class Organism:
         if (random.random() < Common.addConnProb):
             self.addConn()
             
-        if (random.random() < Common.weightMutateProbGenome):
+        if (random.random() < Common.weightMutateProbGenomeConn):
             for conn in self.connGenes:
-                if (random.random() < Common.weightMutateProb):
+                if (random.random() < Common.weightMutateProbConn):
                     conn.weight = random.uniform(-1.0, 1.0)
-    
+
+        if (random.random() < Common.weightMutateProbGenomeNode):
+            for node in self.nodeGenes:
+                if (random.random() < Common.weightMutateProbNode):
+                    node.thresh = random.uniform(Common.tfThreshLow, Common.tfThreshHigh)
+                    
     ''' Mate with another organism to produce an offspring. For matching genes between organisms, the
         offspring will inherit randomly from either parent. For any disjoint or excess genes, the offspring
         will inherit from the fitter parent. If fitnesses are equal, disjoint/excess genes are inherited
         with equal probability from each parent (equal probability per gene). '''            
-    def mateWith(self, partner):
-    
+    def mateWith(self, partner):    
         ''' This is the offspring, which is the output/return value of this function. '''
         offspring = Organism()
         
@@ -519,7 +535,7 @@ class Organism:
         ''' Add common nodes/connections to the offspring. This could potentially be part of the Organism constructor. '''
         #TODO: Move some functionality to constructor?
         #offspring.nodeGenes = list(Common.ioNodes) #No need, I/O nodes will get picked up as part of mating routine further down.
-        offspring.nodeMap = dict(Common.ioNodeMap)
+        #offspring.nodeMap = dict(Common.ioNodeMap) #Same, nodeMap will be updated when we add the input nodes to offspring.
         offspring.revGeneMap = dict(Common.revMapInit)    
     
         ''' Start with the matching genes. We find the matching and disjoint genes in a similar way as used in
@@ -537,11 +553,12 @@ class Organism:
                   
             for node in partner.nodeGenes:
                 if node.nodeNum in disjointSet:
-                    ''' Randomly add one of the matching nodes to the offspring and remove it from the disjoint set. Since nodes don't actually have distinguishing features
-                        other than the innovation number (which we just found to be matching between organisms), we can add a copy of either to the offspring. Make a copy
-                        instead of just copying the reference because conceptually the offspring has its own version, even though the values are the same. '''
+                    ''' Randomly add one of the matching nodes to the offspring and remove it from the disjoint set. '''
                     #disjointSet.remove(node.nodeNum) #No need to remove, since we don't actually use the remaining elements for anything.
-                    offspring.addNode(node)
+                    if random.choice([True, False]):
+                        offspring.addNode(node)
+                    else:
+                        offspring.addNode(self.nodeGenes[self.nodeMap[node.nodeNum]])
                              
             ''' For the remaining disjoint/excess nodes, we could add them now, but the might not do anything by themselves. Instead, they'll have a chance to get added
                 when adding connection genes as part of the addConn method. '''
@@ -606,12 +623,17 @@ class Organism:
                 fitOrg = partner
                 weakOrg = self
             
-            ''' We're supposed to randomly select from parents any matching nodes, and disjoint/excess nodes will come from the fitter parent. Since node genes
-                don't have distinguishing features between organisms (other than node number, which makes them matching in the first place), we can just take
-                all nodes from the fitter parent. Since we also take all disjoint/excess nodes from the fitter parent, this simplifies to just taking all of the
-                fitter parent's node genes. Connection genes will need to actually select randomly since weights can differentiate otherwise matching genes. '''
+            ''' We're supposed to randomly select from parents any matching nodes, and disjoint/excess nodes will come from the fitter parent. '''
             for node in fitOrg.nodeGenes:
-                offspring.addNode(node)
+                if node.nodeNum in weakOrg.nodeMap:
+                    ''' Matching gene - randomly select which one we inherit. '''
+                    if random.choice([True, False]):
+                        offspring.addNode(node)
+                    else:
+                        offspring.addNode(weakOrg.nodeGenes[weakOrg.nodeMap[node.nodeNum]])
+                else:
+                    ''' Disjoint/Excess - inherit from fitter parent. '''
+                    offspring.addNode(node)
                                
             for conn in weakOrg.connGenes:
                 disjointSet.add(conn.nodeNum)

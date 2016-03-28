@@ -9,6 +9,8 @@
             01 -> 1
             10 -> 1
             11 -> 1 
+            
+    There are 3 bits fed into each output computation: 1 bias bit and 2 bits to be XOR'd.
 '''
 
 import Common

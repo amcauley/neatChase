@@ -11,8 +11,7 @@ import random
          - (3/23/16) Add new connection map to Organism that maps connection "nodeNum" to index
                      within connGenes array. Also rename connection "nodeNum", since it's not a node.         
          - (3/25/16) Random seed doesn't seem to be working - still seeing run-to-run variation. Why?
-         - (3/25/16) Can we replace deepcopy in Species.nextGen() with some kind of clone() method? 
-                     It's taking a very long time.
+         - (3/27/16) Add phenotype initialization routine to implement figure 5(a) (Stanley pg. 113).
 '''         
 
 ''' This is global to help debugging - we can access pop from the interpreter after running runProg. '''

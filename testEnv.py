@@ -105,5 +105,9 @@ o0.compFitness()
 o1.compFitness()
 
 ''' Try some organism matings to see if the results make sense. '''
+print('o2 = o0/o0')
 o2 = o0.mateWith(o0) #self mating, so equal fitnesses
+print('o3 = o0/o1')
 o3 = o0.mateWith(o1)
+
+'''Form a new organism that we know computes XOR correctly. '''
