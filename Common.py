@@ -1,17 +1,17 @@
 '''Population size'''
-popSize = 100
+popSize = 150
 
 ''' Max number of generations to simulate. '''
-maxGens = 200
+maxGens = 100
 
 ''' Compatibility distance threshold, d_t in Stanley pg. 110. ''' 
-compatThresh = 0.6
+compatThresh = 6.0
 
 ''' Enable extra output messages. This will be turned on automatically if running the testEnv.py file. '''
 extraPrintEn = False
 
 ''' Threshold size of species, >= than which we will propagate the fittest organism into the next generation, unmodified. '''
-propFittestUnmodThresh = 4
+propFittestUnmodThresh = 5
 
 ''' File defining the fitness metric. Each file has a 'fitness' function. This file will change
     depending on the problem being investigated. ''' 
@@ -31,8 +31,8 @@ coefC2 = 1.0
 coefC3 = 0.4
 
 ''' Upper and lower limits for transfer function threshold. '''
-tfThreshLow  = -5.0
-tfThreshHigh =  5.0
+tfThreshLow  =  -1.0
+tfThreshHigh =   2.0
 
 ''' Square sensor grid size, centered on organism. Should be an odd number so that organism occupies the center square. '''
 sensorGridDim = 3
@@ -58,7 +58,7 @@ sensorGridDim = 3
 #nOutNodes = 2        
 
 ''' For initial testing, just try to compute a 1-bit XOR '''
-nInNodes = 3 #1 bit from each input, 1 bias node
+nInNodes = 3 #1 bit from each input + 1 bias node
 nOutNodes = 1
 
 
@@ -84,10 +84,10 @@ maxAddConnAttempts = 3
 maxAddNodeAttempts = 3
 
 ''' Probability of adding a new node during a mutation. '''
-addNodeProb = 0.1
+addNodeProb = 0.03
 
 ''' Probability of adding a new connection during a mutation. '''
-addConnProb = 0.15
+addConnProb = 0.05
 
 ''' Probability of a genome having its connection weights mutated. '''
 weightMutateProbGenomeConn = 0.8
@@ -109,5 +109,15 @@ selfMutateRatio = 0.25
 ''' Chance an inherited gene is disabled if it was disabled in either parent. '''
 stillDisProb = 0.75
 
+''' Chance of organism undergoing connection disable/enable flipping. '''
+mutateDisFlipProbGenome = 0.05
+
+''' Chance of flipping an individual connection's enabled/disable status during a mutation. '''
+mutateDisFlipProb = 0.1
+
 ''' Interspecies mating rate. '''
 interSpecRate = 0.001 
+
+''' If an organism's genome size is less than this, just normalize by N=1 in compatibility distance
+    computation. '''
+useGenomeSizeOneThresh = 20

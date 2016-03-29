@@ -11,8 +11,10 @@ import random
          - (3/23/16) Add new connection map to Organism that maps connection "nodeNum" to index
                      within connGenes array (maybe). Also rename connection "nodeNum", since it's not a node.         
          - (3/25/16) Random seed doesn't seem to be working - still seeing run-to-run variation. Why?
-'''         
-
+         - (3/28/16) Add 'perfect' XOR organism to testEnv to check that it has top fitness. Also try adding it
+                     to initialization seed to see if it survives (if it doesn't, then nextGen() has some issues).
+'''
+                     
 ''' Import the specified file for initializing organisms. '''
 initOrgModule = __import__(Common.initOrgFile) 
 
@@ -71,8 +73,13 @@ def runProg():
         print(node)
     print('____________')
     print('Top Conns:')
+    disConnCnt = 0
     for conn in fittestEver.connGenes:
-        print(conn)
+        if (conn.disabled):
+            disConnCnt += 1
+        else:    
+            print(conn)
+    print('+ ' + str(disConnCnt) + ' disabled')        
     print('____________')
     print('Top Fitness: ' + str(fittestEver.fitness))
     

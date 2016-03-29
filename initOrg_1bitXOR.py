@@ -34,20 +34,21 @@ def initOrg():
     if c0 is None:
         c0 = Genes.ConnectionGene('Con')
         c0.conn = (Common.ioNodes[1].nodeNum, Common.ioNodes[3].nodeNum)
-        c0.weight = random.uniform(-1.0, 1.0)
         
         c1 = Genes.ConnectionGene('Con')
         c1.conn = (Common.ioNodes[2].nodeNum, Common.ioNodes[3].nodeNum)
-        c1.weight = random.uniform(-1.0, 1.0)
         
         ''' Bias connection. '''
         c2 = Genes.ConnectionGene('Con')
         c2.conn = (Common.ioNodes[0].nodeNum, Common.ioNodes[3].nodeNum)
-        c2.weight = random.uniform(-1.0, 1.0)
     
+    ''' Add connections to the organism, with a random weight. '''
+    c0.weight = random.uniform(-1.0, 1.0)
     org.addConn(c0, org)
+    c1.weight = random.uniform(-1.0, 1.0)
     org.addConn(c1, org)
-    if random.choice([True, False]):
+    if True: #random.choice([True, False]):
+        c2.weight = random.uniform(-1.0, 1.0)
         org.addConn(c2, org)
         
     return org    

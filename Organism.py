@@ -101,8 +101,7 @@ class Organism:
             if nodeHasLoop(self, conn[1], set()):
                 return True
         
-        return False
-
+        return False    
         
     def addNode(self, newNode = None):
         ''' If newNode has a value, add that node into this organism and return. '''
@@ -174,12 +173,13 @@ class Organism:
             
             self.connMap[(newNode.nodeNum, oldDestNodeNum)] = len(self.connGenes)            
             self.connGenes.append(newConn2) 
-            
-    
+  
     def addConn(self, newConn = None, refOrg = None):
         ''' Adds a connection gene. After adding, check if the new node results in a loop. If so, regenerate a connection to use as the new one. Repeat until
             a valid non-looping connection is created. If newConn and refOrg are not None, then we'll add newConn into this organism, and also add the starting and
-            ending node genes from refOrg into this organism if suitable nodes don't already exist. '''
+            ending node genes from refOrg into this organism if suitable nodes don't already exist.
+
+            If a new connection is successfully added, return that new gene, else return None. '''
          
         if newConn is not None:
             
@@ -189,7 +189,7 @@ class Organism:
             ''' Can't add duplicate connections between nodes, even if the connection node numbers don't match. This could happen if two organisms independently evolve
                 a connection between the same nodes. '''
             if ((newConn.conn in self.connMap) or (newConn.conn in self.disConnMap)):
-                return
+                return None
             
             ''' Add the existing connection to this organism, and set up start/stop nodes if needed. '''
             newIdx = len(self.connGenes)
@@ -237,8 +237,9 @@ class Organism:
                 if (addedEndNode):
                     self.nodeGenes.remove(self.nodeGenes[-1])
                     del self.nodeMap[endNodeNum]
+                return None
                     
-            return
+            return self.connGenes[-1]
         
         ''' We're not adding an existing connection, so proceed with adding a newly created one. Don't add a duplicate, though
             (can happen by chance). '''
@@ -294,10 +295,58 @@ class Organism:
                 success = 1
                 break
                 
-        #print('addConn took ' + str(k+1) + ' attempts, success = ' + str(success)) 
-        return
+        #print('addConn took ' + str(k+1) + ' attempts, success = ' + str(success))
+        if (success):
+            return newGene
+        else:    
+            return None
         
+    def setConnDisEn(self, connGene, enableFlag):
+        ''' Disables (enableFlag = False) or enabled (enableFlag = True) connGene within this organism. '''
+        (startNodeNum, endNodeNum) = connGene.conn
         
+        if (enableFlag):
+            ''' Enable this connection: clear the connections disable flag and add the connection to connMap, remove
+                it from disConnMap, and update geneMap and revGeneMap. '''
+            assert(connGene.disabled == True) #No use cases where we expect to enable an already enabled gene
+            connGene.disabled = False
+            self.connMap[connGene.conn] = self.disConnMap[connGene.conn]
+            del self.disConnMap[connGene.conn]
+
+            if (startNodeNum in self.geneMap):
+                self.geneMap[startNodeNum].add(endNodeNum) 
+            else:
+                self.geneMap[startNodeNum] = set([endNodeNum])              
+            
+            if (endNodeNum in self.revGeneMap):
+                self.revGeneMap[endNodeNum].add(startNodeNum)
+            else:
+                self.revGeneMap[endNodeNum] = set([startNodeNum])
+                
+            ''' Check if this new connection introduces a loop - if it does, back out the new connection. '''
+            if self.containsLoop():
+                self.setConnDisEn(connGene, False)             
+
+        else:
+            ''' Disable this connection: opposite of the enable case above. '''
+            assert(connGene.disabled == False) #No use cases where we expect to disable an already disabled gene          
+            connGene.disabled = True
+            self.disConnMap[connGene.conn] = self.connMap[connGene.conn]
+            del self.connMap[connGene.conn]
+            self.geneMap[startNodeNum].remove(endNodeNum)
+            self.revGeneMap[endNodeNum].remove(startNodeNum)
+            ''' Check if this new connection introduces a loop - if it does, back out the new connection. '''
+            if self.containsLoop():
+                self.setConnDisEn(connGene, True)            
+            
+    def toggleDisEn(self, connGene):
+        ''' Toggle the enable state of a connection. '''
+        if (connGene.disabled):
+            self.setConnDisEn(connGene, True)
+        else:
+            self.setConnDisEn(connGene, False)
+
+       
     def compOutput(self, inputValList):
         ''' Take input list (one value per input node) and propagate those values through the neural network. The return value should be outputValTuple,
             which is a list of values, where index i corresponds to the ith output node, i ranges from 0 to Common.nOutNodes-1. 
@@ -334,7 +383,7 @@ class Organism:
         while q:
             (currNodeNum, currVal) = q.popleft()
             
-            if (cntr > 1000): #Debug, attempt to catch infinite loops
+            if (cntr > 1000): #Debug, attempt to catch infinite loops. May be false positive if organism has many connections.
                 print(q)
                 print('(curNode, curVal) = ' + str((currNodeNum, currVal)))
                 print('connMap:')
@@ -490,7 +539,10 @@ class Organism:
      
         maxGenomeSize = max(len(self.nodeGenes) + len(self.connGenes), len(otherOrg.nodeGenes) + len(otherOrg.connGenes))
         #print('maxGenomeSize: ' + str(maxGenomeSize))
-     
+        ''' For small genomes, just use a normalization factor of 1. '''
+        if (maxGenomeSize < Common.useGenomeSizeOneThresh):
+            maxGenomeSize = 1
+    
         ''' This is the actual Eq. (1) computing the compatibility distance. '''
         dist = (Common.coefC1*(excessNode + excessConn) + Common.coefC2*(disjointNode + disjointConn))/maxGenomeSize
         if numMatches > 0:
@@ -516,6 +568,11 @@ class Organism:
             for conn in self.connGenes:
                 if (random.random() < Common.weightMutateProbConn):
                     conn.weight = random.uniform(-1.0, 1.0)
+                    
+        if (random.random() < Common.mutateDisFlipProbGenome):
+            for conn in self.connGenes:                
+                if (random.random() < Common.mutateDisFlipProb):
+                    self.toggleDisEn(conn)
 
         if (random.random() < Common.weightMutateProbGenomeNode):
             for node in self.nodeGenes:
@@ -570,37 +627,54 @@ class Organism:
             if len(self.connGenes) == 0:
                 for conn in partner.connGenes:
                     if random.choice([True, False]):
-                        offspring.addConn(conn, partner)
+                        newGene = offspring.addConn(conn, partner)
+                        if newGene is not None:
+                            if ((newGene.disabled) and (random.random() > Common.stillDisProb)):
+                                offspring.toggleDisEn(newGene)
                         #print('Adding dis/ex gene (num, start, stop, dis): ' + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
             elif len(partner.connGenes) == 0:
                 for conn in self.connGenes:
                     if random.choice([True, False]):
-                        offspring.addConn(conn, self)
+                        newGene = offspring.addConn(conn, self)
+                        if newGene is not None:
+                            if ((newGene.disabled) and (random.random() > Common.stillDisProb)):
+                                offspring.toggleDisEn(newGene)                        
                         #print('Adding dis/ex gene (num, start, stop, dis): ' + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
             else:
                 for conn in partner.connGenes:
                     disjointSet.add(conn.nodeNum)                     
-                        
+                                
                 for conn in self.connGenes:
                     if conn.nodeNum not in disjointSet:
                         ''' This is a disjoint/excess connection. Randomly decide if we want to inherit it or not. No need to add to disjointSet. '''
                         if random.choice([True, False]):
-                            offspring.addConn(conn, self)
+                            newGene = offspring.addConn(conn, self)
+                            ''' If the connection is inherited and disabled, there's a chance that it's enabled in the offspring. '''
+                            if newGene is not None:
+                                if ((newGene.disabled) and (random.random() > Common.stillDisProb)):
+                                    offspring.toggleDisEn(newGene)                             
                             #print('Adding dis/ex gene (num, start, stop, dis): ' + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
                     else:
                         ''' This connection gene is present in both parents. Randomly inherit it from either parent. '''
                         if random.choice([True, False]):
-                            offspring.addConn(conn, self)
+                            newGene = offspring.addConn(conn, self)
                         else:
                             if conn.conn in partner.connMap:
                                 newConn = partner.connGenes[partner.connMap[conn.conn]]
                             else:
                                 newConn = partner.connGenes[partner.disConnMap[conn.conn]]
                             
-                            offspring.addConn(newConn, partner)
+                            newGene = offspring.addConn(newConn, partner)
                             #print('Adding matching gene (num, start, stop, dis): ' + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
-                            
-                        disjointSet.remove(conn.nodeNum)    
+                         
+                        ''' If the connection is inherited and disabled in either/both parent(s), there's a chance that it's enabled in the offspring. '''
+                        if newGene is not None:
+                            disInPartner = conn.conn in partner.disConnMap
+                            if (conn.disabled or disInPartner):
+                                if ((newGene.disabled) and (random.random() > Common.stillDisProb)):
+                                    offspring.toggleDisEn(newGene)
+                         
+                        disjointSet.remove(conn.nodeNum)                        
                             
                 ''' The remaining connections are disjoint connections from partner. Randomly choose if we want to inherit it. '''
                 #TODO: More efficient if we keep a dictionary mapping connection number to connection index in connGenes (like nodeMap),
@@ -611,7 +685,10 @@ class Organism:
                     if random.choice([True, False]):
                         for conn in partner.connGenes:
                             if (conn.nodeNum == connNum):
-                                offspring.addConn(conn, partner)
+                                newGene = offspring.addConn(conn, partner)
+                                if newGene is not None:
+                                    if ((newGene.disabled) and (random.random() > Common.stillDisProb)):
+                                        offspring.toggleDisEn(newGene)                                
                                 break
         
         else:
@@ -641,13 +718,16 @@ class Organism:
             for conn in fitOrg.connGenes:
                 if conn.nodeNum not in disjointSet:
                     ''' This is a disjoint or excess connection in the fitter parent. Offspring inherits it. '''
-                    offspring.addConn(conn, fitOrg)
+                    newGene = offspring.addConn(conn, fitOrg)
+                    if newGene is not None:
+                        if ((newGene.disabled) and (random.random() > Common.stillDisProb)):
+                            offspring.toggleDisEn(newGene)                           
                     #print('Adding dis/ex gene (num, start, stop, dis): ' + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
                 else:
                     ''' This connection gene is present in both parents. Randomly inherit it from either parent. '''
                     #disjointSet.remove(node.nodeNum) #No need to remove - we won't use the disjointSet for anything after this.
                     if random.choice([True, False]):
-                        offspring.addConn(conn, fitOrg)
+                        newGene = offspring.addConn(conn, fitOrg)
                         #print('Adding fit gene (num, start, stop, dis): ' + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
                     else:
                         if conn.conn in weakOrg.connMap:
@@ -655,8 +735,15 @@ class Organism:
                         else:
                             weakConn = weakOrg.connGenes[weakOrg.disConnMap[conn.conn]]
                         
-                        offspring.addConn(weakConn, weakOrg)
+                        newGene = offspring.addConn(weakConn, weakOrg)
                         #print('Adding weak gene (num, start, stop, dis): ' + str((weakConn.nodeNum, weakConn.conn[0], weakConn.conn[1], weakConn.disabled)))
+        
+                    ''' If the connection is inherited and disabled in either/both parent(s), there's a chance that it's enabled in the offspring. '''
+                    if newGene is not None:
+                        disInPartner = conn.conn in weakOrg.disConnMap
+                        if (conn.disabled or disInPartner):
+                            if ((newGene.disabled) and (random.random() > Common.stillDisProb)):
+                                offspring.toggleDisEn(newGene)        
         
         return offspring
     
