@@ -1,8 +1,8 @@
 '''Population size'''
-popSize = 150
+popSize = 500
 
 ''' Max number of generations to simulate. '''
-maxGens = 100
+maxGens = 5
 
 ''' Compatibility distance threshold, d_t in Stanley pg. 110. ''' 
 compatThresh = 6.0
@@ -121,3 +121,9 @@ interSpecRate = 0.001
 ''' If an organism's genome size is less than this, just normalize by N=1 in compatibility distance
     computation. '''
 useGenomeSizeOneThresh = 20
+
+########## DEBUG PARAMS ##########
+
+''' Enable random prints, which can be output to a text file to debug when random values diverge run-to-run. '''
+#TODO: Remove once random seeding provides consistent sequences
+dbgEnRandCheckPrints = False

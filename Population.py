@@ -40,37 +40,41 @@ class Population:
         ''' Clear old organism assignments. '''   
         for spec in self.species:
             spec.clearOrgs()
-            
-        self.fittestOrg = random.sample(self.orgs,1)[0]   
-            
+         
+        #self.fittestOrg = random.sample(self.orgs,1)[0]      
+        self.fittestOrg = random.choice(sorted(self.orgs))
+        
         ''' New assignments. Also update fittest organism. '''
-        for org in self.orgs:
+        #for org in self.orgs:
+        for org in sorted(self.orgs): #DBG
             if (org.fitness > self.fittestOrg.fitness):
                 self.fittestOrg = org
             foundSpec = False
-            for spec in self.species:
-                dist = org.compatDist(spec.representative)
+            #for spec in self.species:
+            for spec in sorted(self.species): #DBG
+                dist = org.compatDist(spec.representative)              
                 if dist <= self.compatThresh:
-                    spec.addOrg(org)
+                    spec.addOrg(org)                   
                     foundSpec = True
                     break
             if not foundSpec:
                 self.species.add(Species.Species({org}))
-                
+            
         ''' Delete any dead (empty) species, and assign new representative to keep it up to date.
             Temporarily store removal species in a separate set, otherwise we'll get errors about
             self.species changing size in the middle of iterating over it. '''
         removalSet = set()
-        for spec in self.species:
+        #for spec in self.species:
+        for spec in sorted(self.species): #DBG
             if spec.isEmpty():
                 removalSet.add(spec)
             else:
-                spec.updateRep()
+                spec.updateRep()             
                 
-        for spec in removalSet:
+        #for spec in removalSet:
+        for spec in sorted(removalSet): #DBG
             self.species.remove(spec)
                     
-        
     ''' Progress population into the next generation. We'll sort species by adjusted fitness and then
         provide grants for the next generation. After each species progresses to the next generation, we'll
         go through each species and remove and dead ones. Finally, we'll delete the old population list and
@@ -81,7 +85,7 @@ class Population:
         fitSum = 0.0
         for spec in specList:
             spec.adjFitComp() #This will also update the fitness measure for each organism
-            fitSum = fitSum + spec.adjFitSum                   
+            fitSum = fitSum + spec.adjFitSum                            
             
         ''' Sorting is based on adjusted fitness (see Species __lt__ method). Ascending fitness order. '''
         specList.sort()
@@ -95,8 +99,8 @@ class Population:
             thisGrant = int(Common.popSize*spec.adjFitSum/fitSum)
             grantSum = grantSum + thisGrant
         if grantSum < Common.popSize:
-            extraGrant = Common.popSize - grantSum          
-                
+            extraGrant = Common.popSize - grantSum            
+            
         numNewOrgs = 0
         for spec in specList:
             if (numNewOrgs >= Common.popSize):
@@ -111,7 +115,7 @@ class Population:
 
             ''' Give the species its new grant. If the grant is zero, it will just clear the species's population. '''    
             spec.nextGen(thisGrant)                 
-        
+            
         ''' Iterate through updated species to form updated population. Deleting any dead/empty species will happen later
             during the speciate() method. Don't kill them off now since even if the species is empty, it might pick up some
             new orgs during speciate, or a non-empty one could lose its organisms during the update. '''
@@ -119,9 +123,9 @@ class Population:
         for spec in specList:
             if (len(spec.orgs) != 0):
                 newPop.update(spec.orgs) # Union of current orgs set and new orgs from this species
-        
+                
         self.orgs = newPop        
         
         ''' Now that we have the updated population, recompute species assignments. '''
-        self.speciate()
+        self.speciate()       
         

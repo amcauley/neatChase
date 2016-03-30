@@ -47,7 +47,7 @@ def initOrg():
     org.addConn(c0, org)
     c1.weight = random.uniform(-1.0, 1.0)
     org.addConn(c1, org)
-    if True: #random.choice([True, False]):
+    if True: #random.choice((True, False)):
         c2.weight = random.uniform(-1.0, 1.0)
         org.addConn(c2, org)
         

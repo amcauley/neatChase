@@ -14,6 +14,9 @@ class NodeGene:
         newNode.nodeNum = self.nodeNum
         newNode.thresh = self.thresh
         return newNode
+
+    def __lt__(self, other):
+        return self.nodeNum < other.nodeNum
         
     def __str__(self):
         return 'num ' + str(self.nodeNum) + '\n' +\
@@ -38,6 +41,9 @@ class ConnectionGene:
         newConn.conn = self.conn
         newConn.weight = self.weight
         return newConn        
+        
+    def __lt__(self, other):
+        return self.nodeNum < other.nodeNum
         
     def __str__(self):
         return 'num ' + str(self.nodeNum) + '\n' +\

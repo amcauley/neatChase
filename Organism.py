@@ -31,6 +31,7 @@ def nodeHasLoop(org, nodeNum, visitedSet):
 
 class Organism:
     def __init__(self):
+        self.uid = random.randint(0, 2**31-1)
         self.fitness = -1
         self.species = -1
         self.nodeGenes = []
@@ -59,7 +60,7 @@ class Organism:
         self.parents = [None, None]
     
     def clone(self):
-        ''' Return a copy of this organism that isn't just a reference to the original. Use this for getting a deep copy of this organism. '''
+        ''' Return a copy of this organism that isn't just a reference to the original. Use this for getting a deep copy of this organism (except uid). '''
         newOrg = Organism()
         newOrg.fitness = self.fitness
         newOrg.species = self.species
@@ -127,10 +128,14 @@ class Organism:
             
             newNode = Genes.NodeGene("Mid") #create the new node
             
-            connGene = random.sample(self.connGenes,1)[0] #select which two (connected) nodes the new one will fall between
+            #connGene = random.sample(self.connGenes,1)[0] #select which two (connected) nodes the new one will fall between
+            connGene = random.choice(sorted(self.connGenes))
+
             attemptCnt = 0
             while (connGene.disabled): #keep trying until we get a non-disabled connection. Exit if we haven't found a valid connection after X tries.
-                connGene = random.sample(self.connGenes,1)[0]
+                #connGene = random.sample(self.connGenes,1)[0]
+                connGene = random.choice(sorted(self.connGenes))
+                
                 attemptCnt = attemptCnt + 1
                 if (attemptCnt > Common.maxAddNodeAttempts):
                     return
@@ -245,8 +250,11 @@ class Organism:
             (can happen by chance). '''
         success = 0
         for k in range(Common.maxAddConnAttempts):
-            firstNode = random.sample(self.nodeGenes,1)[0]
-            secondNode = random.sample(self.nodeGenes,1)[0]
+            #firstNode = random.sample(self.nodeGenes,1)[0]
+            firstNode = random.choice(sorted(self.nodeGenes))
+            
+            #secondNode = random.sample(self.nodeGenes,1)[0]
+            secondNode = random.choice(sorted(self.nodeGenes))
             
             ''' If we selected the same node twice, continue to next attempt. '''
             if (firstNode == secondNode):
@@ -441,12 +449,16 @@ class Organism:
             NOTE: Can't count on nodeNums strictly increasing through nodeGenes or connGenes lists, since mating/mutation could
             rearrange the orderings. '''
             
-        maxSelfNodeNum = random.sample(self.nodeGenes,1)[0].nodeNum
+        #maxSelfNodeNum = random.sample(self.nodeGenes,1)[0].nodeNum   
+        maxSelfNodeNum = random.choice(sorted(self.nodeGenes)).nodeNum
+        
         for node in self.nodeGenes:
             if (node.nodeNum > maxSelfNodeNum):
-                maxSelfNodeNum = node.nodeNum
-
-        maxOtherNodeNum = random.sample(otherOrg.nodeGenes,1)[0].nodeNum
+                maxSelfNodeNum = node.nodeNum               
+                
+        #maxOtherNodeNum = random.sample(otherOrg.nodeGenes,1)[0].nodeNum
+        maxOtherNodeNum = random.choice(sorted(self.nodeGenes)).nodeNum
+        
         for node in otherOrg.nodeGenes:
             if (node.nodeNum > maxOtherNodeNum):
                 maxOtherNodeNum = node.nodeNum
@@ -458,7 +470,7 @@ class Organism:
  
         weightSum = 0.0 # Sum of weight mismatches.
         numMatches = 0  # Number of matching genes (even if the weights don't actually match)
- 
+        
         for node in self.nodeGenes:
             if (node.nodeNum > minMaxNodeNum):
                 excessNode += 1
@@ -474,7 +486,10 @@ class Organism:
                 weightSum = weightSum + abs(node.thresh - self.nodeGenes[self.nodeMap[node.nodeNum]].thresh)
             else:
                 disjointSet.add(node.nodeNum)
-        
+
+        if Common.dbgEnRandCheckPrints:
+            print('compatDist: ' + str(random.random())) 
+                
         disjointNode = len(disjointSet)
         
         ''' Next: do the same for connection genes, with one modification. When a matching gene is found
@@ -485,21 +500,31 @@ class Organism:
         excessConn = 0
         disjointConn = 0
         weightSum = 0
-        numMatches = 0
-
+        numMatches = 0        
+        
         if ((len(self.connGenes) == 0) or (len(otherOrg.connGenes) == 0)):
             excessConn = max(len(self.connGenes), len(otherOrg.connGenes))
         else:
-            maxSelfNodeNum = random.sample(self.connGenes,1)[0].nodeNum
+            if Common.dbgEnRandCheckPrints:
+                print('rand: ' + str(random.random())) 
+
+            #maxSelfNodeNum = random.sample(self.connGenes,1)[0].nodeNum #Non-deterministic. WHY?
+            maxSelfNodeNum = random.choice(sorted(self.connGenes)).nodeNum
+            
+            if Common.dbgEnRandCheckPrints:
+                print('compatDist nodeNum: ' + str(maxSelfNodeNum))             
+            
             for conn in self.connGenes:
                 if (conn.nodeNum > maxSelfNodeNum):
                     maxSelfNodeNum = conn.nodeNum
 
-            maxOtherNodeNum = random.sample(otherOrg.connGenes,1)[0].nodeNum
+            #maxOtherNodeNum = random.sample(otherOrg.connGenes,1)[0].nodeNum
+            maxOtherNodeNum = random.choice(sorted(self.nodeGenes)).nodeNum
+            
             for conn in otherOrg.connGenes:
                 if (conn.nodeNum > maxOtherNodeNum):
-                    maxOtherNodeNum = conn.nodeNum            
-
+                    maxOtherNodeNum = conn.nodeNum                                
+                    
             minMaxNodeNum = min(maxSelfNodeNum, maxOtherNodeNum)
             
             disjointSet = set()                            
@@ -509,7 +534,7 @@ class Organism:
                     excessConn += 1
                 else:
                     disjointSet.add(conn.nodeNum)
-                    
+                 
             for conn in otherOrg.connGenes:
                 if (conn.nodeNum > minMaxNodeNum):
                     excessConn += 1
@@ -546,8 +571,8 @@ class Organism:
         ''' This is the actual Eq. (1) computing the compatibility distance. '''
         dist = (Common.coefC1*(excessNode + excessConn) + Common.coefC2*(disjointNode + disjointConn))/maxGenomeSize
         if numMatches > 0:
-            dist = dist + Common.coefC3*weightSum/numMatches
-                    
+            dist = dist + Common.coefC3*weightSum/numMatches 
+ 
         #print('compat dist: ' + str(dist))
         return dist
         
@@ -612,7 +637,7 @@ class Organism:
                 if node.nodeNum in disjointSet:
                     ''' Randomly add one of the matching nodes to the offspring and remove it from the disjoint set. '''
                     #disjointSet.remove(node.nodeNum) #No need to remove, since we don't actually use the remaining elements for anything.
-                    if random.choice([True, False]):
+                    if random.choice((True, False)):
                         offspring.addNode(node)
                     else:
                         offspring.addNode(self.nodeGenes[self.nodeMap[node.nodeNum]])
@@ -626,7 +651,7 @@ class Organism:
                 up that gene. '''
             if len(self.connGenes) == 0:
                 for conn in partner.connGenes:
-                    if random.choice([True, False]):
+                    if random.choice((True, False)):
                         newGene = offspring.addConn(conn, partner)
                         if newGene is not None:
                             if ((newGene.disabled) and (random.random() > Common.stillDisProb)):
@@ -634,7 +659,7 @@ class Organism:
                         #print('Adding dis/ex gene (num, start, stop, dis): ' + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
             elif len(partner.connGenes) == 0:
                 for conn in self.connGenes:
-                    if random.choice([True, False]):
+                    if random.choice((True, False)):
                         newGene = offspring.addConn(conn, self)
                         if newGene is not None:
                             if ((newGene.disabled) and (random.random() > Common.stillDisProb)):
@@ -647,7 +672,7 @@ class Organism:
                 for conn in self.connGenes:
                     if conn.nodeNum not in disjointSet:
                         ''' This is a disjoint/excess connection. Randomly decide if we want to inherit it or not. No need to add to disjointSet. '''
-                        if random.choice([True, False]):
+                        if random.choice((True, False)):
                             newGene = offspring.addConn(conn, self)
                             ''' If the connection is inherited and disabled, there's a chance that it's enabled in the offspring. '''
                             if newGene is not None:
@@ -656,7 +681,7 @@ class Organism:
                             #print('Adding dis/ex gene (num, start, stop, dis): ' + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
                     else:
                         ''' This connection gene is present in both parents. Randomly inherit it from either parent. '''
-                        if random.choice([True, False]):
+                        if random.choice((True, False)):
                             newGene = offspring.addConn(conn, self)
                         else:
                             if conn.conn in partner.connMap:
@@ -681,8 +706,9 @@ class Organism:
                 #but will need a bit of rewriting and added sets to handle this. For now, just use inefficient search of all connections 
                 #to see if there's a match with connNum.
                 
-                for connNum in disjointSet:
-                    if random.choice([True, False]):
+                #for connNum in disjointSet:
+                for connNum in sorted(disjointSet): #DBG, see if helps with getting deterministic results
+                    if random.choice((True, False)):
                         for conn in partner.connGenes:
                             if (conn.nodeNum == connNum):
                                 newGene = offspring.addConn(conn, partner)
@@ -704,7 +730,7 @@ class Organism:
             for node in fitOrg.nodeGenes:
                 if node.nodeNum in weakOrg.nodeMap:
                     ''' Matching gene - randomly select which one we inherit. '''
-                    if random.choice([True, False]):
+                    if random.choice((True, False)):
                         offspring.addNode(node)
                     else:
                         offspring.addNode(weakOrg.nodeGenes[weakOrg.nodeMap[node.nodeNum]])
@@ -726,7 +752,7 @@ class Organism:
                 else:
                     ''' This connection gene is present in both parents. Randomly inherit it from either parent. '''
                     #disjointSet.remove(node.nodeNum) #No need to remove - we won't use the disjointSet for anything after this.
-                    if random.choice([True, False]):
+                    if random.choice((True, False)):
                         newGene = offspring.addConn(conn, fitOrg)
                         #print('Adding fit gene (num, start, stop, dis): ' + str((conn.nodeNum, conn.conn[0], conn.conn[1], conn.disabled)))
                     else:
@@ -746,6 +772,9 @@ class Organism:
                                 offspring.toggleDisEn(newGene)        
         
         return offspring
+    
+    def __lt__(self, other):
+        return self.uid < other.uid
     
     def __str__(self):
         retStr = ""
