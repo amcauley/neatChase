@@ -16,6 +16,7 @@ class NodeGene:
         return newNode
 
     def __lt__(self, other):
+        assert(self.nodeNum != other.nodeNum)
         return self.nodeNum < other.nodeNum
         
     def __str__(self):
@@ -31,7 +32,7 @@ class ConnectionGene:
         self.nodeType = type
         self.disabled = False      
         self.conn = (-1, -1) # Tuple describing the start and end NodeGenes of this connection
-        self.weight = 0     # Connection weight
+        self.weight = 0.0    # Connection weight
         
     ''' Return a new instance of this gene. '''    
     def clone(self):    
@@ -43,6 +44,7 @@ class ConnectionGene:
         return newConn        
         
     def __lt__(self, other):
+        assert(self.nodeNum != other.nodeNum)
         return self.nodeNum < other.nodeNum
         
     def __str__(self):

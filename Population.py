@@ -40,18 +40,16 @@ class Population:
         ''' Clear old organism assignments. '''   
         for spec in self.species:
             spec.clearOrgs()
-         
-        #self.fittestOrg = random.sample(self.orgs,1)[0]      
-        self.fittestOrg = random.choice(sorted(self.orgs))
+  
+        self.fittestOrg = random.sample(self.orgs,1)[0]
         
         ''' New assignments. Also update fittest organism. '''
-        #for org in self.orgs:
-        for org in sorted(self.orgs): #DBG
+        for org in self.orgs:
             if (org.fitness > self.fittestOrg.fitness):
                 self.fittestOrg = org
             foundSpec = False
-            #for spec in self.species:
-            for spec in sorted(self.species): #DBG
+
+            for spec in self.species:
                 dist = org.compatDist(spec.representative)              
                 if dist <= self.compatThresh:
                     spec.addOrg(org)                   
@@ -64,15 +62,14 @@ class Population:
             Temporarily store removal species in a separate set, otherwise we'll get errors about
             self.species changing size in the middle of iterating over it. '''
         removalSet = set()
-        #for spec in self.species:
-        for spec in sorted(self.species): #DBG
+        
+        for spec in self.species:
             if spec.isEmpty():
                 removalSet.add(spec)
             else:
-                spec.updateRep()             
-                
-        #for spec in removalSet:
-        for spec in sorted(removalSet): #DBG
+                spec.updateRep()
+                                                  
+        for spec in removalSet:
             self.species.remove(spec)
                     
     ''' Progress population into the next generation. We'll sort species by adjusted fitness and then
@@ -115,7 +112,7 @@ class Population:
 
             ''' Give the species its new grant. If the grant is zero, it will just clear the species's population. '''    
             spec.nextGen(thisGrant)                 
-            
+             
         ''' Iterate through updated species to form updated population. Deleting any dead/empty species will happen later
             during the speciate() method. Don't kill them off now since even if the species is empty, it might pick up some
             new orgs during speciate, or a non-empty one could lose its organisms during the update. '''
@@ -128,4 +125,3 @@ class Population:
         
         ''' Now that we have the updated population, recompute species assignments. '''
         self.speciate()       
-        

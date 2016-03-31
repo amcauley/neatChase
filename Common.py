@@ -1,14 +1,11 @@
 '''Population size'''
-popSize = 500
+popSize = 200
 
 ''' Max number of generations to simulate. '''
-maxGens = 5
+maxGens = 50
 
 ''' Compatibility distance threshold, d_t in Stanley pg. 110. ''' 
 compatThresh = 6.0
-
-''' Enable extra output messages. This will be turned on automatically if running the testEnv.py file. '''
-extraPrintEn = False
 
 ''' Threshold size of species, >= than which we will propagate the fittest organism into the next generation, unmodified. '''
 propFittestUnmodThresh = 5
@@ -18,12 +15,6 @@ propFittestUnmodThresh = 5
 fitnessFunc = 'fitness_1bitXOR'
 
 initOrgFile = 'initOrg_1bitXOR'
-
-''' Flag to use randSeed below to seed the RNG. '''
-useFixedSeed = True
-
-''' Random number seed used for actual runs (testEnv doesn't necessarily use this). '''
-randSeed = 0
 
 '''Compatibility coefficients'''
 coefC1 = 1.0
@@ -124,6 +115,6 @@ useGenomeSizeOneThresh = 20
 
 ########## DEBUG PARAMS ##########
 
-''' Enable random prints, which can be output to a text file to debug when random values diverge run-to-run. '''
-#TODO: Remove once random seeding provides consistent sequences
-dbgEnRandCheckPrints = False
+''' Enable extra output messages. This will be turned on automatically if running the testEnv.py file. '''
+extraPrintEn = False
+

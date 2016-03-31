@@ -8,14 +8,13 @@ import copy
     
 class Species:
     def __init__(self, orgs): 
-
+        self.uid = random.randint(0, 2**31-1)   
         self.orgs = orgs
         
         ''' Current representative of the species - new candidate organisms for the species are
             compared against this one, which is randomly chosen from members of the previous generation
-            of the species. For initialization, choose a random member from orgs. Or just pick the first one. '''
-        #self.representative = random.sample(orgs,1)[0]
-        self.representative = random.choice(sorted(orgs))
+            of the species. For initialization, choose a random member from orgs. Or just pick the first one. '''  
+        self.representative = random.sample(orgs,1)[0]
         
         ''' Sum of adjusted fitness for this species - Eq. (2) of Stanley pg. 110. '''
         self.adjFitSum = 0.0
@@ -37,8 +36,7 @@ class Species:
         
     ''' Choose a new representative for this species. '''
     def updateRep(self):
-        #self.representative = random.sample(self.orgs,1)[0]
-        self.representative = random.choice(sorted(self.orgs))
+        self.representative = random.sample(self.orgs,1)[0]
         
     ''' Compute the adjusted fitness sum - Eq. (2) of Stanley pg. 110. This is the sum of all fitnesses of this
         species's organisms, divided by the number of organisms in the species. This value will determine how many
@@ -66,8 +64,8 @@ class Species:
         if ((openSlots >= Common.propFittestUnmodThresh) and (len(self.orgs) > 0)):
             ''' Find the current fittest and propagate to the next generation. '''
             openSlots = openSlots-1
-            #curFittest = random.sample(self.orgs,1)[0]
-            curFittest = random.choice(sorted(self.orgs))
+            
+            curFittest = random.sample(self.orgs,1)[0]            
             
             for org in self.orgs:
                 if org.fitness > curFittest.fitness:
@@ -78,10 +76,7 @@ class Species:
         nSelfMutate = int(grant*Common.selfMutateRatio)
         while ((openSlots > 0) and (nSelfMutate > 0)):
             #print('nSelfMutate ' + str(nSelfMutate) + ' openSlots ' + str(openSlots) + ', newPop: ' + str(newPop))         
-            #mutOrg = random.sample(self.orgs,1)[0].clone()
-            mutOrg = random.choice(sorted(self.orgs)).clone()
-            
-            #mutOrg = copy.deepcopy(random.sample(self.orgs,1)[0])
+            mutOrg = random.sample(self.orgs,1)[0].clone()            
             mutOrg.mutate()          
             newPop.add(mutOrg)
             openSlots = openSlots-1
@@ -93,20 +88,16 @@ class Species:
             in the species, it can mate with itself. '''
         while (openSlots > 0):
             ''' Call sample twice instead of a single sample of 2 organisms in case there's only 1 org in the species. '''
-            #parent1 = random.sample(self.orgs,1)[0]
-            parent1 = random.choice(sorted(self.orgs))
-            
-            #parent2 = random.sample(self.orgs,1)[0]
-            parent2 = random.choice(sorted(self.orgs))
-            
+            parent1 = random.sample(self.orgs,1)[0]          
+            parent2 = random.sample(self.orgs,1)[0]
+
             newOrg = parent1.mateWith(parent2)
             newPop.add(newOrg)
             openSlots = openSlots-1          
-             
+        
         ''' Update the fittest organism for the new generation. '''    
-        if (len(newPop) > 0):    
-            #curFittest = random.sample(self.orgs,1)[0]
-            curFittest = random.choice(sorted(self.orgs))
+        if (len(newPop) > 0):
+            curFittest = random.sample(self.orgs,1)[0]            
             
             for org in self.orgs:
                 if org.fitness > curFittest.fitness:
@@ -118,5 +109,5 @@ class Species:
             
             
     ''' Implement less than, which will allow us to call .sort() on an array of species. '''        
-    def __lt__(self, other):
+    def __lt__(self, other):   
         return self.adjFitSum < other.adjFitSum
