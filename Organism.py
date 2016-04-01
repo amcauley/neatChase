@@ -359,7 +359,7 @@ class Organism:
         ''' Make sure the inputValList is a valid length. '''
         assert(len(inputValList) == Common.nInNodes)
         
-        nodeInputs = {} #dictionary: key = node number, value is set input values. Once set size equals total number of inputs, node is ready for propagation
+        nodeInputs = {} #dictionary: key = node number, value is list of input values (set could fail on dups). Once list size equals total number of inputs, node is ready for propagation
         
         ''' Initialize processing queue to input nodes and their input vals. '''
         for idx in range(Common.nInNodes):
@@ -399,16 +399,21 @@ class Organism:
             
             ''' Add input to node. '''
             if (currNodeNum in nodeInputs):
-                nodeInputs[currNodeNum].add(currVal)
+                nodeInputs[currNodeNum].append(currVal)
             else:
-                nodeInputs[currNodeNum] = set([currVal])
+                nodeInputs[currNodeNum] = [currVal]
             
             #print('(currNodeNum, inputVal) = ' + str((currNodeNum, currVal)))
+            #print('len(nodeInputs[currNodeNum]) = ' + str(len(nodeInputs[currNodeNum])) + ', len(revGeneMap[currNodeNum]) = ' + str(len(self.revGeneMap[currNodeNum])))
             
             ''' If node has received all inputs, propagate values to next nodes. '''
             if (len(nodeInputs[currNodeNum]) == len(self.revGeneMap[currNodeNum])):
                 
-                outputVal = utils.nodeTransferFunc(sum(nodeInputs[currNodeNum]), self.nodeGenes[self.nodeMap[currNodeNum]].thresh)
+                ''' Input nodes just pass value along, other nodes first pass it through transfer function. '''
+                if (self.nodeGenes[self.nodeMap[currNodeNum]].nodeType == 'In'):
+                    outputVal = sum(nodeInputs[currNodeNum])
+                else:
+                    outputVal = utils.nodeTransferFunc(sum(nodeInputs[currNodeNum]), self.nodeGenes[self.nodeMap[currNodeNum]].thresh)
                 
                 #print('(currNodeNum, outputVal) = ' + str((currNodeNum, outputVal)))
                 
@@ -527,7 +532,7 @@ class Organism:
                        
             disjointConn = len(disjointSet)
           
-        if Common.extraPrintEn:  
+        if Common.extraPrintEnCompat:  
             print('disjointNode: ' + str(disjointNode))
             print('excessNode: ' + str(excessNode))
             print('disjointConn: ' + str(disjointConn))
@@ -550,8 +555,8 @@ class Organism:
         return dist
         
     ''' Compute the fitness for this organism. '''    
-    def compFitness(self):
-        self.fitness = fitnessModule.fitness(self)
+    def compFitness(self, indvTestPrint = False):
+        self.fitness = fitnessModule.fitness(self, indvTestPrint)
         return self.fitness
         
     ''' Run organism mutation, which can happen whether or not an organism is formed via mating. '''

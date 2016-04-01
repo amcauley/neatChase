@@ -11,7 +11,9 @@ import random
 random.seed(0)
 
 ''' Enable extra messages. '''
-Common.extraPrintEn = True
+Common.extraPrintEnFitness = True
+Common.extraPrintEnCompat = True
+Common.extraPrintEnSpecUID = True
 
 ''' Start by creating some nodes. '''
 n0 = Genes.NodeGene('In')

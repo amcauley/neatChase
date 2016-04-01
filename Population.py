@@ -85,7 +85,7 @@ class Population:
             fitSum = fitSum + spec.adjFitSum                            
             
         ''' Sorting is based on adjusted fitness (see Species __lt__ method). Ascending fitness order. '''
-        specList.sort()
+        specList.sort(reverse=True) # rely on spec __lt__ method, ascending order
         
         ''' Figure out how many grants will be given. If it's less than desired population size, give some
             extra grants to the fittest species. This could happen due to rounding. If we want more than are
@@ -108,8 +108,11 @@ class Population:
                     thisGrant = Common.popSize - numNewOrgs
                 elif ((extraGrant > 0) and (spec == specList[0])): #Award any extraGrant to the first (fittest) species
                     thisGrant = thisGrant + extraGrant
-                numNewOrgs = numNewOrgs + thisGrant
+                numNewOrgs += thisGrant
 
+            if Common.extraPrintEnSpecUID:
+                print('Spec UID ' + str(spec.uid) + ', adjFitSum ' + str(spec.adjFitSum) + ', grant: ' + str(thisGrant))
+                
             ''' Give the species its new grant. If the grant is zero, it will just clear the species's population. '''    
             spec.nextGen(thisGrant)                 
              

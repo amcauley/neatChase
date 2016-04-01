@@ -5,13 +5,13 @@ import Population
 import random
 
 ''' TODO:
-         - (3/20/16) Need to add a disable/enable method for organisms to dis/enable connections,
-                     and then use this method to implement flipping disable state in offspring
-                     (per Stanley, there's a chance state will change).
+         - (3/31/16) Dynamically adjust compat threshold to maintain number of species.
+         - (3/31/16) Implement separate params for small vs. large species (mentioned in Stanley).
+         - (3/31/16) Kill off species if they show no improvement after X generations.
+         - (3/31/16) Within species, give fitter organisms higher chance to reproduce?
+         - (3/31/16) Interspecies mating (low prio)
          - (3/23/16) Add new connection map to Organism that maps connection "nodeNum" to index
                      within connGenes array (maybe). Also rename connection "nodeNum", since it's not a node.         
-         - (3/28/16) Add 'perfect' XOR organism to testEnv to check that it has top fitness. Also try adding it
-                     to initialization seed to see if it survives (if it doesn't, then nextGen() has some issues).
 '''
                      
 ''' Import the specified file for initializing organisms. '''
@@ -21,6 +21,7 @@ initOrgModule = __import__(Common.initOrgFile)
 pop = Population.Population()
 
 def runProg():
+    print('====================Start_Simulation====================')
     ''' Form common I/O nodes that will be used in all organisms.
         NOTE! Don't change order of populating ioNodes in input, then output, then any middle nodes,
         since other sections of code assume this ordering, ex. compOutput method in Organism.py. '''
@@ -77,6 +78,7 @@ def runProg():
                 print(conn)
         print('+ ' + str(disConnCnt) + ' disabled')        
         print('____________')
+        fittestEver.compFitness(True)
         print('Top Fitness: ' + str(fittestEver.fitness))
         
     

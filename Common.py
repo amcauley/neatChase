@@ -1,11 +1,11 @@
 '''Population size'''
-popSize = 200
+popSize = 300
 
 ''' Max number of generations to simulate. '''
-maxGens = 50
+maxGens = 200
 
 ''' Compatibility distance threshold, d_t in Stanley pg. 110. ''' 
-compatThresh = 6.0
+compatThresh = 5.0
 
 ''' Threshold size of species, >= than which we will propagate the fittest organism into the next generation, unmodified. '''
 propFittestUnmodThresh = 5
@@ -22,8 +22,8 @@ coefC2 = 1.0
 coefC3 = 0.4
 
 ''' Upper and lower limits for transfer function threshold. '''
-tfThreshLow  =  -1.0
-tfThreshHigh =   2.0
+tfThreshLow  =  0.0
+tfThreshHigh =  2.0
 
 ''' Square sensor grid size, centered on organism. Should be an odd number so that organism occupies the center square. '''
 sensorGridDim = 3
@@ -78,7 +78,7 @@ maxAddNodeAttempts = 3
 addNodeProb = 0.03
 
 ''' Probability of adding a new connection during a mutation. '''
-addConnProb = 0.05
+addConnProb = 0.1
 
 ''' Probability of a genome having its connection weights mutated. '''
 weightMutateProbGenomeConn = 0.8
@@ -88,7 +88,7 @@ weightMutateProbGenomeConn = 0.8
 weightMutateProbConn = 0.1
 
 ''' Probability of a genome having its node weights/thresholds mutated. '''
-weightMutateProbGenomeNode = 0.5
+weightMutateProbGenomeNode = 0.2
 
 ''' Probability of assigning new random weight/threshold if node weights are being mutated.
     This is the probability applied to each node weight/threshold in the genome. '''
@@ -111,10 +111,14 @@ interSpecRate = 0.001
 
 ''' If an organism's genome size is less than this, just normalize by N=1 in compatibility distance
     computation. '''
-useGenomeSizeOneThresh = 20
+useGenomeSizeOneThresh = 30
 
 ########## DEBUG PARAMS ##########
 
 ''' Enable extra output messages. This will be turned on automatically if running the testEnv.py file. '''
-extraPrintEn = False
+extraPrintEnFitness = False
+extraPrintEnCompat = False
+extraPrintEnSpecUID = False
 
+''' Provide the initial population with an optimum organism to start off with. '''
+startWithOptOrg = False
