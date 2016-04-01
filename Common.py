@@ -2,10 +2,15 @@
 popSize = 300
 
 ''' Max number of generations to simulate. '''
-maxGens = 200
+maxGens = 50
 
-''' Compatibility distance threshold, d_t in Stanley pg. 110. ''' 
+''' Target number of species. '''
+targetNumSpecs = 25
+
+''' Starting compatibility distance threshold, d_t in Stanley pg. 110 and starting step size for control loop. ''' 
 compatThresh = 5.0
+compatStep = 1.0
+maxCompatThresh = 10.0 #Maximum allowed threshold (0 is the minimum)
 
 ''' Threshold size of species, >= than which we will propagate the fittest organism into the next generation, unmodified. '''
 propFittestUnmodThresh = 5

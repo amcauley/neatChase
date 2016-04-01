@@ -4,6 +4,7 @@
 import Common    
 import Species    
 import random
+import utils    
     
 class Population:
     def __init__(self, orgs=None):
@@ -16,8 +17,10 @@ class Population:
             method explicitly if needed. '''
         self.species = set()
 
-        ''' Threshold compatibility distance that determines if an organism can be added to this species. '''
+        ''' Threshold compatibility distance that determines if an organism can be added to this species, and starting step size. '''
+        self.targetNumSpecs = Common.targetNumSpecs
         self.compatThresh = Common.compatThresh
+        self.compatStep = Common.compatStep
         
         ''' Fittest organism. '''
         self.fittestOrg = None
@@ -127,4 +130,28 @@ class Population:
         self.orgs = newPop        
         
         ''' Now that we have the updated population, recompute species assignments. '''
-        self.speciate()       
+        self.speciate() 
+
+        ''' Adjust compatibility threshold to try to maintain target number of species. '''
+        specLen = len(self.species)
+        ''' Modifier: If last correction wasn't sufficient, increase adjustment amount. If we overshot, decrease amount. Remember
+            that if specLen is larger than target, we want to *increase* compatStep to reduce the number of species. '''
+        if (utils.isGTZ(self.compatStep) == utils.isGTZ(specLen - self.targetNumSpecs)):
+            stepScale = 1.5
+        else:
+            stepScale = 0.5
+            
+        if (specLen < self.targetNumSpecs):
+            ''' Bump down thresh unless we're at limit. '''
+            if (self.compatThresh > 0):
+                self.compatStep = -abs(self.compatStep)*stepScale
+                self.compatThresh = max(self.compatThresh + self.compatStep, 0)
+        elif (specLen > self.targetNumSpecs):
+            ''' Too many species, increase compatThresh unless at limit. '''
+            if (self.compatThresh < Common.maxCompatThresh):
+                self.compatStep = abs(self.compatStep)*stepScale
+                self.compatThresh = min(self.compatThresh + self.compatStep, Common.maxCompatThresh)
+        #else:
+            ''' We hit our target. Don't touch anything. '''
+        
+        print('compatThresh ' + str(self.compatThresh) + ', compatStep ' + str(self.compatStep) + ', scale ' + str(stepScale))

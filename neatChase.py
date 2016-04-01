@@ -5,7 +5,6 @@ import Population
 import random
 
 ''' TODO:
-         - (3/31/16) Dynamically adjust compat threshold to maintain number of species.
          - (3/31/16) Implement separate params for small vs. large species (mentioned in Stanley).
          - (3/31/16) Kill off species if they show no improvement after X generations.
          - (3/31/16) Within species, give fitter organisms higher chance to reproduce?
