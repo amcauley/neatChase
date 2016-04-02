@@ -6,6 +6,9 @@ import Species
 import random
 import utils    
     
+''' Import the specified file for initializing organisms. '''
+initOrgModule = __import__(Common.initOrgFile)    
+    
 class Population:
     def __init__(self, orgs=None):
         if orgs is None:
@@ -84,8 +87,25 @@ class Population:
         
         fitSum = 0.0
         for spec in specList:
-            spec.adjFitComp() #This will also update the fitness measure for each organism
+            spec.adjFitComp()
             fitSum = fitSum + spec.adjFitSum                            
+            
+        ''' In the rare event that there are no fit organisms, we'll rebuild the entire population. '''      
+        if (fitSum == 0.0):
+            print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            print('Rebuilding Population')
+            print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            self.orgs = set()
+            self.specs = set()
+            for n in range(Common.popSize):
+                ''' Create new organism, then assign i/o nodes to it'''
+                org = initOrgModule.initOrg()
+                self.addOrg(org)
+                org.compFitness() #Comp fitness for this starting organism
+            
+                ''' Initial speciation. '''
+                self.speciate() 
+            return
             
         ''' Sorting is based on adjusted fitness (see Species __lt__ method). Ascending fitness order. '''
         specList.sort(reverse=True) # rely on spec __lt__ method, ascending order

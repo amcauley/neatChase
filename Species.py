@@ -22,6 +22,13 @@ class Species:
         ''' Fittest organism in this species. '''
         self.fittestOrg = None
         
+        ''' Count number of generations without species seeing improvement. '''
+        self.stagCnt = 0
+        
+        ''' Max fitness seen in this species. Not necessarily corresponding to fittestOrg, since fittestOrg could be modified and no longer
+            match maxFitness, e.g. if it mutates and becomes less fit. '''
+        self.maxFitness = 0.0        
+        
     ''' Add an organism to the species. '''
     def addOrg(self, newOrg):
         self.orgs.add(newOrg)   
@@ -46,7 +53,10 @@ class Species:
         numOrgs = len(self.orgs)
         
         if numOrgs == 0:
-            self.adjFitSum = 0.0         
+            self.adjFitSum = 0.0
+        elif (self.stagCnt >= Common.noImprovementGenLim):
+            self.adjFitSum = 0.0
+            print('spec ' + str(self.uid) + ' died of stagnation')
         else:
             for org in self.orgs:
                 fitSum = fitSum + org.compFitness()
@@ -100,9 +110,16 @@ class Species:
             curFittest = random.sample(self.orgs,1)[0]            
             
             for org in self.orgs:
-                if org.fitness > curFittest.fitness:
+                if org.fitness >= curFittest.fitness: #Need the equality, otherwise fittestOrg can be none during first gen if all fitnesses are the same.
                     self.fittestOrg = org
-                    
+                    curFittest = org            
+            
+            if (self.fittestOrg.fitness > self.maxFitness):
+                self.maxFitness = self.fittestOrg.fitness
+                self.stagCnt = 0
+            else:
+                self.stagCnt += 1
+            
         ''' Delete old species population, replace with new one. Global population will update later after all species have
             undergone the nextGen routine. '''        
         self.orgs = newPop

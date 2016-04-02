@@ -1,11 +1,11 @@
 '''Population size'''
-popSize = 300
+popSize = 500
 
 ''' Max number of generations to simulate. '''
-maxGens = 50
+maxGens = 100
 
 ''' Target number of species. '''
-targetNumSpecs = 25
+targetNumSpecs = 40
 
 ''' Starting compatibility distance threshold, d_t in Stanley pg. 110 and starting step size for control loop. ''' 
 compatThresh = 5.0
@@ -57,7 +57,6 @@ sensorGridDim = 3
 nInNodes = 3 #1 bit from each input + 1 bias node
 nOutNodes = 1
 
-
 ''' Input/Output nodes. These will be common to all organisms, even if the i/o nodes
     end up unused for a particular organism. Stored as a list, so order is important (input nodes first, then out nodes,
     then anything else). '''
@@ -78,6 +77,9 @@ maxAddConnAttempts = 3
 
 ''' Max attempts to add a new node - could fail if we don't find an enabled connection. '''
 maxAddNodeAttempts = 3
+
+''' Number of generations after which a species won't be allowed to reproduce if it's shown no improvement in maximum fitness. '''
+noImprovementGenLim = 20
 
 ''' Probability of adding a new node during a mutation. '''
 addNodeProb = 0.03
@@ -116,7 +118,7 @@ interSpecRate = 0.001
 
 ''' If an organism's genome size is less than this, just normalize by N=1 in compatibility distance
     computation. '''
-useGenomeSizeOneThresh = 30
+useGenomeSizeOneThresh = 20
 
 ########## DEBUG PARAMS ##########
 

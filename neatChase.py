@@ -6,7 +6,6 @@ import random
 
 ''' TODO:
          - (3/31/16) Implement separate params for small vs. large species (mentioned in Stanley).
-         - (3/31/16) Kill off species if they show no improvement after X generations.
          - (3/31/16) Within species, give fitter organisms higher chance to reproduce?
          - (3/31/16) Interspecies mating (low prio)
          - (3/23/16) Add new connection map to Organism that maps connection "nodeNum" to index
@@ -39,14 +38,14 @@ def runProg():
         ''' Create new organism, then assign i/o nodes to it'''
         org = initOrgModule.initOrg()
         pop.addOrg(org)
-        org.compFitness()
+        org.compFitness() #Comp fitness for this starting organism
     
     ''' Initial speciation. '''
-    pop.speciate() # Since everything is the same at this point, everything will be grouped into a single species.
+    pop.speciate()
     print('Gen 0')
     print('Max Fitness: ' + str(pop.fittestOrg.fitness) + ', Num Species: ' + str(len(pop.species)) + '\n')
    
-    fittestEver = pop.fittestOrg
+    fittestEver = pop.fittestOrg.clone()
    
     ''' Run the simulation for the specified number of generations. '''
     for gen in range(Common.maxGens):
@@ -57,7 +56,7 @@ def runProg():
         print('Max Fitness: ' + str(thisGenFittest.fitness) + ', Num Species: ' + str(len(pop.species)) + '\n')
         
         if (thisGenFittest.fitness > fittestEver.fitness):
-            fittestEver = thisGenFittest
+            fittestEver = thisGenFittest.clone()
         
         ''' Sanity checks. '''
         assert(len(pop.orgs) == Common.popSize)

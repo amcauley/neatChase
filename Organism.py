@@ -582,6 +582,9 @@ class Organism:
                 if (random.random() < Common.weightMutateProbNode):
                     node.thresh = random.uniform(Common.tfThreshLow, Common.tfThreshHigh)
                     
+        ''' Update the fitness after organism changes. '''
+        self.compFitness()
+                    
     ''' Mate with another organism to produce an offspring. For matching genes between organisms, the
         offspring will inherit randomly from either parent. For any disjoint or excess genes, the offspring
         will inherit from the fitter parent. If fitnesses are equal, disjoint/excess genes are inherited
@@ -746,6 +749,9 @@ class Organism:
                         if (conn.disabled or disInPartner):
                             if ((newGene.disabled) and (random.random() > Common.stillDisProb)):
                                 offspring.toggleDisEn(newGene)        
+        
+        ''' Compute fitness and return the new organism. '''
+        offspring.compFitness()
         
         return offspring
     
