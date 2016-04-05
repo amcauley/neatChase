@@ -5,6 +5,7 @@
 import Common   
 import random    
 import copy    
+import utils    
     
 class Species:
     def __init__(self, orgs): 
@@ -67,20 +68,18 @@ class Species:
     ''' Create the next generation. Grant is now many organisms this species gets for the new generation. openSlots
         will track how many remaining organisms can fit in the next generation. '''  
     def nextGen(self, grant):
+    
+        assert(len(self.orgs) > 0)
+    
         openSlots = grant
-        
         newPop = set()
         
-        if ((openSlots >= Common.propFittestUnmodThresh) and (len(self.orgs) > 0)):
+        sortedOrgs = sorted(list(self.orgs), reverse=True)
+        
+        if (openSlots >= Common.propFittestUnmodThresh):
             ''' Find the current fittest and propagate to the next generation. '''
             openSlots = openSlots-1
-            
-            curFittest = random.sample(self.orgs,1)[0]            
-            
-            for org in self.orgs:
-                if org.fitness > curFittest.fitness:
-                    curFittest = org
-            newPop.add(curFittest)
+            newPop.add(sortedOrgs[0])
             
         ''' Handle portion of new generation formed from mutations without crossover. '''
         nSelfMutate = int(grant*Common.selfMutateRatio)
@@ -97,9 +96,9 @@ class Species:
         ''' Offspring formed by mating two random organisms from the previous generation. Even if there is only 1 organism
             in the species, it can mate with itself. '''
         while (openSlots > 0):
-            ''' Call sample twice instead of a single sample of 2 organisms in case there's only 1 org in the species. '''
-            parent1 = random.sample(self.orgs,1)[0]          
-            parent2 = random.sample(self.orgs,1)[0]
+            ''' Pick parents based off of fitness-sorted list of organisms. '''
+            parent1 = sortedOrgs[int(utils.orgSelectPdfRand(Common.orgPdfOffset)*len(sortedOrgs))]
+            parent2 = sortedOrgs[int(utils.orgSelectPdfRand(Common.orgPdfOffset)*len(sortedOrgs))]
 
             newOrg = parent1.mateWith(parent2)
             newPop.add(newOrg)

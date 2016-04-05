@@ -6,7 +6,6 @@ import random
 
 ''' TODO:
          - (3/31/16) Implement separate params for small vs. large species (mentioned in Stanley).
-         - (3/31/16) Within species, give fitter organisms higher chance to reproduce?
          - (3/31/16) Interspecies mating (low prio)
          - (3/23/16) Add new connection map to Organism that maps connection "nodeNum" to index
                      within connGenes array (maybe). Also rename connection "nodeNum", since it's not a node.         

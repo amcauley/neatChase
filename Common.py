@@ -1,15 +1,15 @@
 '''Population size'''
-popSize = 500
+popSize = 300
 
 ''' Max number of generations to simulate. '''
-maxGens = 100
+maxGens = 50
 
 ''' Target number of species. '''
-targetNumSpecs = 40
+targetNumSpecs = 10
 
 ''' Starting compatibility distance threshold, d_t in Stanley pg. 110 and starting step size for control loop. ''' 
-compatThresh = 5.0
-compatStep = 1.0
+compatThresh = 1.0
+compatStep = 0.2
 maxCompatThresh = 10.0 #Maximum allowed threshold (0 is the minimum)
 
 ''' Threshold size of species, >= than which we will propagate the fittest organism into the next generation, unmodified. '''
@@ -85,7 +85,7 @@ noImprovementGenLim = 20
 addNodeProb = 0.03
 
 ''' Probability of adding a new connection during a mutation. '''
-addConnProb = 0.1
+addConnProb = 0.3
 
 ''' Probability of a genome having its connection weights mutated. '''
 weightMutateProbGenomeConn = 0.8
@@ -119,6 +119,9 @@ interSpecRate = 0.001
 ''' If an organism's genome size is less than this, just normalize by N=1 in compatibility distance
     computation. '''
 useGenomeSizeOneThresh = 20
+
+''' Parameter fed to random number generator for organism index selector - see utils.py orgSelectPdfRand(). '''
+orgPdfOffset = 0.5
 
 ########## DEBUG PARAMS ##########
 
