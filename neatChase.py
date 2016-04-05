@@ -76,6 +76,7 @@ def runProg():
         print('+ ' + str(disConnCnt) + ' disabled')        
         print('____________')
         fittestEver.compFitness(True)
+        print('')
         print('Top Fitness: ' + str(fittestEver.fitness))
         
     

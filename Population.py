@@ -103,8 +103,8 @@ class Population:
                 self.addOrg(org)
                 org.compFitness() #Comp fitness for this starting organism
             
-                ''' Initial speciation. '''
-                self.speciate() 
+            ''' Initial speciation. '''
+            self.speciate() 
             return
             
         ''' Sorting is based on adjusted fitness (see Species __lt__ method). Ascending fitness order. '''
