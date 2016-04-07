@@ -14,24 +14,33 @@ import random
 ''' Import the specified file for initializing organisms. '''
 initOrgModule = __import__(Common.initOrgFile) 
 
-''' This is global to help debugging - we can access pop from the interpreter after running runProg. '''
-pop = Population.Population()
 
 def runProg():
-    print('====================Start_Simulation====================')
+    if Common.basicPrintEn:
+        print('====================Start_Simulation====================')
+        
+    pop = Population.Population()
+        
     ''' Form common I/O nodes that will be used in all organisms.
         NOTE! Don't change order of populating ioNodes in input, then output, then any middle nodes,
-        since other sections of code assume this ordering, ex. compOutput method in Organism.py. '''
-    Common.ioNodes = []    
-    for n in range(Common.nInNodes):
-        newGene = Genes.NodeGene('In')
-        Common.ioNodeMap[newGene.nodeNum] = len(Common.ioNodes)
-        Common.ioNodes.append(newGene)
-        Common.revMapInit[newGene.nodeNum] = set([-1])
-    for n in range(Common.nOutNodes):
-        newGene = Genes.NodeGene('Out')
-        Common.ioNodeMap[newGene.nodeNum] = len(Common.ioNodes)
-        Common.ioNodes.append(newGene)    
+        since other sections of code assume this ordering, ex. compOutput method in Organism.py.
+
+        Can skip this initialization if these already exist, i.e. if we've already run runProg() before.
+        Check this by seeing if Common.ioNodes has been populated already.
+    '''
+     
+    initOrgModule.commonInit()
+     
+    if not Common.ioNodes:    
+        for n in range(Common.nInNodes):
+            newGene = Genes.NodeGene('In')
+            Common.ioNodeMap[newGene.nodeNum] = len(Common.ioNodes)
+            Common.ioNodes.append(newGene)
+            Common.revMapInit[newGene.nodeNum] = set([-1])
+        for n in range(Common.nOutNodes):
+            newGene = Genes.NodeGene('Out')
+            Common.ioNodeMap[newGene.nodeNum] = len(Common.ioNodes)
+            Common.ioNodes.append(newGene)    
     
     for n in range(Common.popSize):
         ''' Create new organism, then assign i/o nodes to it'''
@@ -41,18 +50,22 @@ def runProg():
     
     ''' Initial speciation. '''
     pop.speciate()
-    print('Gen 0')
-    print('Max Fitness: ' + str(pop.fittestOrg.fitness) + ', Num Species: ' + str(len(pop.species)) + '\n')
+    if Common.basicPrintEn:
+        print('Gen 0')
+        print('Max Fitness: ' + str(pop.fittestOrg.fitness) + ', Num Species: ' + str(len(pop.species)) + '\n')
    
     fittestEver = pop.fittestOrg.clone()
    
     ''' Run the simulation for the specified number of generations. '''
     for gen in range(Common.maxGens):
-        print('Gen ' + str(gen) + ' -> Gen ' + str(gen+1))
+        if Common.basicPrintEn:
+            print('Gen ' + str(gen) + ' -> Gen ' + str(gen+1))
 
         pop.nextGen()
         thisGenFittest = pop.fittestOrg
-        print('Max Fitness: ' + str(thisGenFittest.fitness) + ', Num Species: ' + str(len(pop.species)) + '\n')
+        
+        if Common.basicPrintEn:
+            print('Max Fitness: ' + str(thisGenFittest.fitness) + ', Num Species: ' + str(len(pop.species)) + '\n')
         
         if (thisGenFittest.fitness > fittestEver.fitness):
             fittestEver = thisGenFittest.clone()
@@ -60,7 +73,7 @@ def runProg():
         ''' Sanity checks. '''
         assert(len(pop.orgs) == Common.popSize)
    
-    if True:
+    if Common.basicPrintEn:
         print('____________End_Simulation____________')
         print('Top Nodes:')
         for node in fittestEver.nodeGenes:
@@ -78,9 +91,11 @@ def runProg():
         fittestEver.compFitness(True)
         print('')
         print('Top Fitness: ' + str(fittestEver.fitness))
-        
+    
+    return fittestEver.fitness
     
 if __name__ == "__main__":
+    Common.basicPrintEn = True
     runProg()
     
     

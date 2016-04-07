@@ -10,6 +10,11 @@ c0 = None
 c1 = None
 c2 = None
 
+def commonInit():
+    ''' For initial testing, just try to compute a 1-bit XOR '''
+    Common.nInNodes = 3 #1 bit from each input + 1 bias node
+    Common.nOutNodes = 1
+
 def optOrg():
     ''' Create an optimum organism for this fitness measure. '''
     print('Creating optimal 1bitXOR org')

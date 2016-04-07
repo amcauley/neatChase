@@ -92,9 +92,10 @@ class Population:
             
         ''' In the rare event that there are no fit organisms, we'll rebuild the entire population. '''      
         if (fitSum == 0.0):
-            print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-            print('Rebuilding Population')
-            print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            if Common.extraPrintEnPopInfo:
+                print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                print('Rebuilding Population')
+                print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
             self.orgs = set()
             self.specs = set()
             for n in range(Common.popSize):
@@ -133,7 +134,7 @@ class Population:
                     thisGrant = thisGrant + extraGrant
                 numNewOrgs += thisGrant
 
-            if Common.extraPrintEnSpecUID:
+            if Common.extraPrintEnPopInfo:
                 print('Spec UID ' + str(spec.uid) + ', adjFitSum ' + str(spec.adjFitSum) + ', grant: ' + str(thisGrant))
                 
             ''' Give the species its new grant. If the grant is zero, it will just clear the species's population. '''    
@@ -174,4 +175,5 @@ class Population:
         #else:
             ''' We hit our target. Don't touch anything. '''
         
-        print('compatThresh ' + str(self.compatThresh) + ', compatStep ' + str(self.compatStep) + ', scale ' + str(stepScale))
+        if Common.extraPrintEnPopInfo:
+            print('compatThresh ' + str(self.compatThresh) + ', compatStep ' + str(self.compatStep) + ', scale ' + str(stepScale))

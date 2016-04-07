@@ -57,7 +57,8 @@ class Species:
             self.adjFitSum = 0.0
         elif (self.stagCnt >= Common.noImprovementGenLim):
             self.adjFitSum = 0.0
-            print('spec ' + str(self.uid) + ' died of stagnation')
+            if Common.extraPrintEnFitness:
+                print('spec ' + str(self.uid) + ' died of stagnation')
         else:
             for org in self.orgs:
                 fitSum = fitSum + org.compFitness()

@@ -1,5 +1,7 @@
 import math
 import random
+import neatChase
+import Common
 
 ''' Transfer function between nodes. Currently a sigmoid. '''
 def nodeTransferFunc(x, offset = 0):
@@ -42,6 +44,16 @@ def testPdf(runs=10000, bins=10, b=0.4):
     for k in range(bins):
         print('[' + str(k) + ']: ' + str(binCnt[k]))
         
+''' Generate statistics about how often a program "succeeds." '''        
+def testStats():
+    Common.basicPrintEn = False
+    numSuc = 0
+    numRuns = 100
+    print('start...')
+    for k in range(numRuns):
+        if neatChase.runProg() > 9.0:
+            numSuc += 1
+        print('run ' + str(k+1) + '/' + str(numRuns) + ', ' + str(numSuc*100.0/(k+1.0)) + '% success.')
         
 if __name__ == "__main__":
-    testPdf()        
+    testStats()        
