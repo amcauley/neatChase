@@ -158,9 +158,9 @@ class Population:
         ''' Modifier: If last correction wasn't sufficient, increase adjustment amount. If we overshot, decrease amount. Remember
             that if specLen is larger than target, we want to *increase* compatStep to reduce the number of species. '''
         if (utils.isGTZ(self.compatStep) == utils.isGTZ(specLen - self.targetNumSpecs)):
-            stepScale = 1.5
+            stepScale = 1.1
         else:
-            stepScale = 0.5
+            stepScale = 0.8
             
         if (specLen < self.targetNumSpecs):
             ''' Bump down thresh unless we're at limit. '''

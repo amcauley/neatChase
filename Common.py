@@ -1,11 +1,15 @@
 '''Population size'''
-popSize = 300
+popSize = 500
 
 ''' Max number of generations to simulate. '''
-maxGens = 40
+maxGens = 100
 
 ''' Target number of species. '''
-targetNumSpecs = 10
+targetNumSpecs = 100
+
+''' Max Fitness limit. In some fitness measures, like pred/prey, limit the max fitness / max number of iterations of the
+    chase loop. The value here can be overridden in the initOrg commonInit() routine for the fitness measure. '''
+maxFitness = 100
 
 ''' Starting compatibility distance threshold, d_t in Stanley pg. 110 and starting step size for control loop. ''' 
 compatThresh = 1.0
@@ -17,9 +21,9 @@ propFittestUnmodThresh = 5
 
 ''' File defining the fitness metric. Each file has a 'fitness' function. This file will change
     depending on the problem being investigated. ''' 
-fitnessFunc = 'fitness_1bitXOR'
+fitnessFunc = 'fitness_prey'
 
-initOrgFile = 'initOrg_1bitXOR'
+initOrgFile = 'initOrg_prey'
 
 '''Compatibility coefficients'''
 coefC1 = 1.0
@@ -103,7 +107,7 @@ lastConnNodeInnovation = -1
 basicPrintEn = True
 
 ''' Enable extra output messages. This will be turned on automatically if running the testEnv.py file. '''
-extraPrintEnFitness = False
+extraPrintEnFitness = True
 extraPrintEnCompat = False
 extraPrintEnPopInfo = False
 

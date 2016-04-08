@@ -9,6 +9,10 @@ def commonInit():
     ''' 9 inputs: 1 bias node and 8 inputs for the squares surrounding the prey. '''
     Common.nInNodes = 9
     Common.nOutNodes = 4 # Movement cmds: up/down/left/right
+    
+    ''' This will limit how long a simulation can run, which will prevent infinite loops, for example
+        if the prey is really good at evading the predator. '''
+    Common.maxFitness = 150
 
 def optOrg():
     ''' Create an optimum organism for this fitness measure. '''
@@ -30,6 +34,6 @@ def initOrg():
     org.nodeMap = dict(Common.ioNodeMap)
     org.revGeneMap = dict(Common.revMapInit)    
     
-    assert(0) # Prey initOrg not yet implemented
+    #assert(0) # Prey initOrg not yet implemented, can either assert or return connectionless org.
         
     return org    

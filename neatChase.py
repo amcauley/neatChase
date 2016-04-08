@@ -5,6 +5,8 @@ import Population
 import random
 
 ''' TODO:
+         - (4/7/16)  "Animate" the pred/prey chase (maybe use turtle to draw the state after each round, use
+                     GIMP to turn into a GIF).
          - (3/31/16) Implement separate params for small vs. large species (mentioned in Stanley).
          - (3/31/16) Interspecies mating (low prio)
          - (3/23/16) Add new connection map to Organism that maps connection "nodeNum" to index
