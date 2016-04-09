@@ -5,12 +5,11 @@ import Population
 import random
 
 ''' TODO:
-         - (4/7/16)  "Animate" the pred/prey chase (maybe use turtle to draw the state after each round, use
-                     GIMP to turn into a GIF).
-         - (3/31/16) Implement separate params for small vs. large species (mentioned in Stanley).
+         - (4/9/16)  Find a way to graphically represent the nodes/connections.
+         - (3/31/16) Implement separate params for small vs. large species (mentioned in Stanley) (low prio).
          - (3/31/16) Interspecies mating (low prio)
          - (3/23/16) Add new connection map to Organism that maps connection "nodeNum" to index
-                     within connGenes array (maybe). Also rename connection "nodeNum", since it's not a node.         
+                     within connGenes array (maybe). Also rename connection "nodeNum", since it's not a node (low prio).         
 '''
                      
 ''' Import the specified file for initializing organisms. '''

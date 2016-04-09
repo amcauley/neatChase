@@ -5,7 +5,7 @@ popSize = 500
 maxGens = 100
 
 ''' Target number of species. '''
-targetNumSpecs = 100
+targetNumSpecs = 80
 
 ''' Max Fitness limit. In some fitness measures, like pred/prey, limit the max fitness / max number of iterations of the
     chase loop. The value here can be overridden in the initOrg commonInit() routine for the fitness measure. '''

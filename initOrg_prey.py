@@ -12,7 +12,7 @@ def commonInit():
     
     ''' This will limit how long a simulation can run, which will prevent infinite loops, for example
         if the prey is really good at evading the predator. '''
-    Common.maxFitness = 150
+    Common.maxFitness = 50
 
 def optOrg():
     ''' Create an optimum organism for this fitness measure. '''
